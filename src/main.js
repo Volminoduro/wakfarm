@@ -1,6 +1,8 @@
 import { createApp } from 'vue'
 import './style.css'
 import { useAppStore } from '@/stores/useAppStore'
+import { useJsonStore } from '@/stores/useJsonStore'
+import { useConfigRunStore } from '@/stores/useConfigRunStore'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 
