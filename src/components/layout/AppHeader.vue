@@ -37,6 +37,12 @@
         :style="mainTab === 'prices' ? `text-shadow: ${ACTIVE_TAB_TEXT_SHADOW};` : ''">
         {{ $t('divers.tab_prices') }}
       </button>
+      <button 
+        @click="mainTab = 'settings'" 
+        :class="['flex-1 py-2 transition-all font-semibold text-lg', mainTab === 'settings' ? COLOR_CLASSES.activeMainTab : COLOR_CLASSES.inactiveMainTab]"
+        :style="mainTab === 'settings' ? `text-shadow: ${ACTIVE_TAB_TEXT_SHADOW};` : ''">
+        {{ $t('divers.tab_settings') }}
+      </button>
     </nav>
   </header>
 </template>

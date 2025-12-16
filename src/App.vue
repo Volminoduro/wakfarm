@@ -13,6 +13,8 @@
       <RentabilityHourView v-else-if="mainTab === 'runs'" />
 
       <PricesView v-else-if="mainTab === 'prices'" />
+
+      <SettingsView v-else-if="mainTab === 'settings'" />
     </main>
     
     <AppFooter />
@@ -30,6 +32,7 @@ import AppFooter from '@/components/layout/AppFooter.vue'
 import RentabilityRunView from '@/views/RentabilityRunView.vue'
 import RentabilityHourView from '@/views/RentabilityHourView.vue'
 import PricesView from '@/views/PricesView.vue'
+import SettingsView from '@/views/SettingsView.vue'
 
 const appStore = useAppStore()
 const jsonStore = useJsonStore()

@@ -10216,6 +10216,14 @@
     "display_detailed": "Vista detallada",
     "display_simple": "Vista simple",
     "config_wave_start": "Ola inicial",
-    "config_waves_done": "Olas completadas"
+    "config_waves_done": "Olas completadas",
+    "tab_settings": "Configuración",
+    "settings": {
+        "folderPath": "Ruta de la carpeta de capturas de pantalla del juego",
+        "defaultFolder": "Carpeta predeterminada",
+        "launchOnStartup": "Iniciar la aplicación al arrancar Windows",
+        "chooseFolder": "Elegir carpeta",
+        "minimizeToTray": "Minimizar a la bandeja del sistema (iconos ocultos)"
+    }
   }
 }
