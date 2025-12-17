@@ -142,7 +142,3 @@ function toggleAllRun() {
   }
 }
 </script>
-
-<style scoped>
-/* custom-checkbox provided globally in src/style.css */
-</style>

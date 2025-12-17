@@ -41,7 +41,3 @@ const alertLevel = computed(() => {
   return warnings.value.some(w => w.type === 'danger') ? 'danger' : 'warning'
 })
 </script>
-
-<style scoped>
-/* Keep styles minimal; the parent header will handle placement */
-</style>

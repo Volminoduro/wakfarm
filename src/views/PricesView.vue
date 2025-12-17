@@ -154,10 +154,9 @@
         <select
           v-model.number="itemsPerPage"
           class="cf-select">
+          <option :value="5">5</option>
+          <option :value="10">10</option>
           <option :value="25">25</option>
-          <option :value="50">50</option>
-          <option :value="100">100</option>
-          <option :value="200">200</option>
         </select>
       </div>
     </div>
@@ -264,7 +263,7 @@ const filterLevelMax = useLocalStorage(LS_KEYS.PRICES_LEVEL_MAX, '')
 const sortColumn = useLocalStorage(LS_KEYS.PRICES_SORT_COLUMN, 'name')
 const sortDirection = useLocalStorage(LS_KEYS.PRICES_SORT_DIRECTION, 'asc')
 const currentPage = useLocalStorage(LS_KEYS.PRICES_PAGE, 1)
-const itemsPerPage = useLocalStorage(LS_KEYS.PRICES_PER_PAGE, 50)
+const itemsPerPage = useLocalStorage(LS_KEYS.PRICES_PER_PAGE, 25)
 
 // Search autocomplete
 const showAutocomplete = ref(false)

@@ -31,8 +31,6 @@
 /* --- BASE STYLES --- */
 body {
   font-family: 'Nunito', system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   font-size: 1rem; /* 16px */
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
@@ -73,7 +71,7 @@ h1, h2, h3, h4, h5, h6 {
 .cf-panel { @apply bg-bg-secondary border-2 border-wakfu-gray rounded-lg p-3; }
 .cf-panel-lg { @apply bg-bg-secondary border-2 border-wakfu-gray rounded-lg p-4; }
 
-.cf-footer { @apply bg-bg-secondary text-slate-400; }
+.cf-footer { @apply bg-bg-secondary text-slate-400 px-8 py-3 text-xs; }
 
 /* Dropdowns, autocomplete and list aliases */
 .cf-dropdown {
@@ -119,8 +117,6 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Checkbox Styles */
 .custom-checkbox {
-  -webkit-appearance: none;
-  -moz-appearance: none;
   appearance: none;
   @apply w-6 h-6 border-2 rounded cursor-pointer relative transition-all bg-checkbox-bg border-checkbox-border;
 }
@@ -129,8 +125,6 @@ h1, h2, h3, h4, h5, h6 {
 .custom-checkbox:focus { @apply ring-2 ring-checkbox-focus ring-offset-0; }
 
 .custom-checkbox-small {
-  -webkit-appearance: none;
-  -moz-appearance: none;
   appearance: none;
   @apply w-4 h-4 border-2 rounded-sm bg-checkbox-bg border-checkbox-border cursor-pointer transition-all;
 }

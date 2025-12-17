@@ -107,7 +107,3 @@ const getDisplayText = () => {
   return `${count.toString().padStart(2, ' ')}/${LEVEL_RANGES.length}`
 }
 </script>
-
-<style scoped>
-/* custom-checkbox-small now provided globally in src/style.css */
-</style>

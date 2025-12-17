@@ -168,13 +168,7 @@ function updateField(field, value) {
 <style scoped>
 /* custom-checkbox-small moved to global src/style.css */
 
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
 input[type=number] {
   appearance: textfield;
-  -moz-appearance: textfield;
 }
 </style>

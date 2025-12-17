@@ -1,5 +1,5 @@
 <template>
-  <div class="cf-panel-lg p-2" style="contain: layout style;">
+  <div class="cf-panel-lg p-2 overflow-visible">
     <div class="mb-2">
       <h2 class="text-2xl cf-text-light">Filtres</h2>
     </div>
@@ -8,11 +8,11 @@
         <table class="w-full" style="table-layout: fixed;">
           <thead>
             <tr>
-              <th class="text-center font-medium pb-2 text-base cf-text-secondary">{{ $t('divers.config_min_rate') }}</th>
-              <th class="text-center font-medium pb-2 text-base text-slate-300">{{ $t('divers.config_min_profit') }}</th>
-              <th class="text-center font-medium pb-2 text-base text-slate-300">{{ $t('divers.config_min_total') }}</th>
-              <th class="text-center font-medium pb-2 text-base text-slate-300">{{ $t('divers.level_ranges_title') }}</th>
-              <th class="text-center font-medium pb-2 text-base text-slate-300" colspan="2">{{ $t('divers.config_server') }}</th>
+              <th class="text-center font-medium pb-2 text-base cf-text-normal">{{ $t('divers.config_min_rate') }}</th>
+              <th class="text-center font-medium pb-2 text-base cf-text-normal">{{ $t('divers.config_min_profit') }}</th>
+              <th class="text-center font-medium pb-2 text-base cf-text-normal">{{ $t('divers.config_min_total') }}</th>
+              <th class="text-center font-medium pb-2 text-base cf-text-normal">{{ $t('divers.level_ranges_title') }}</th>
+              <th class="text-center font-medium pb-2 text-base cf-text-normal" colspan="2">{{ $t('divers.config_server') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -127,14 +127,8 @@ function updateMinDropRate(event) {
 </script>
 
 <style scoped>
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
 input[type=number] {
   appearance: textfield;
-  -moz-appearance: textfield;
 }
 
 .input-wrapper {

@@ -213,7 +213,8 @@ export function calculateInstanceForRunWithPricesAndPassFilters(instanceId, runC
 function _makeCalculatedInstanceCacheKey(instanceId, config) {
   const relevant = {
     formatConfigRun: formatConfigRun(config),
-    nbCycles: getNbCyclesForConfig(config)
+    nbCycles: getNbCyclesForConfig(config),
+    booster: !!config.isBooster
   }
   return `${instanceId}|${JSON.stringify(relevant)}`
 }
@@ -223,6 +224,7 @@ function _makeCalculatedInstanceWithPricesCacheKey(instanceId, config) {
   const relevant = {
     formatConfigRun: formatConfigRun(config),
     nbCycles: getNbCyclesForConfig(config),
+    booster: !!config.isBooster,
     // include price version so cache invalidates when prices change
     priceVersion: jsonStore.pricesLastUpdate || 'none'
   }
