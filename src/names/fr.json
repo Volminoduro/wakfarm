@@ -10254,7 +10254,8 @@
         "defaultFolder": "Dossier par défaut",
         "launchOnStartup": "Lancer l'application au démarrage de Windows",
         "chooseFolder": "Choisir un dossier",
-        "minimizeToTray": "Réduire dans la zone de notification (icônes cachées)"
+        "minimizeToTray": "Réduire dans la zone de notification (icônes cachées)",
+        "deleteAfterOCR": "Supprimer la capture d'écran après traitement (OCR)"
     }
   }
 }

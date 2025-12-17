@@ -10223,7 +10223,8 @@
         "defaultFolder": "Carpeta predeterminada",
         "launchOnStartup": "Iniciar la aplicación al arrancar Windows",
         "chooseFolder": "Elegir carpeta",
-        "minimizeToTray": "Minimizar a la bandeja del sistema (iconos ocultos)"
+        "minimizeToTray": "Minimizar a la bandeja del sistema (iconos ocultos)",
+        "deleteAfterOCR": "Eliminar la captura de pantalla después del procesamiento (OCR)"
     }
   }
 }

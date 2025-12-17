@@ -10223,7 +10223,8 @@
         "defaultFolder": "Default folder",
         "launchOnStartup": "Launch the application at Windows startup",
         "chooseFolder": "Choose folder",
-        "minimizeToTray": "Minimize to system tray (hidden icons)"
+        "minimizeToTray": "Minimize to system tray (hidden icons)",
+        "deleteAfterOCR": "Delete the screenshot after processing (OCR)"
     }
   }
 }

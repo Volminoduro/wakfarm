@@ -1,13 +1,21 @@
 <template>
     <div class="px-8 py-6 max-w-[1920px] mx-auto">
         <div :class="[COLOR_CLASSES.bgSecondary, 'border-2 border-[#363634] rounded-lg', 'rounded-lg p-3 mb-3']">            
-                <div class="flex items-center gap-2 mb-2">
-                    <label for="folderPath" :class="COLOR_CLASSES.textNormal">{{ $t('divers.settings.folderPath') }}</label>
-                    <button type="button" @click="selectFolder" class="px-2 py-1 bg-slate-700 rounded text-xs">
-                        {{ $t('divers.settings.chooseFolder') }}
-                    </button>
-                </div>
-                <label :class="[COLOR_CLASSES.textNormal, 'break-all']">{{ folderPath }}</label>
+          <div class="flex items-center gap-2 mb-2">
+              <label for="folderPath" :class="COLOR_CLASSES.textNormal">{{ $t('divers.settings.folderPath') }}</label>
+              <button type="button" @click="selectFolder" class="px-2 py-1 bg-slate-700 rounded text-xs">
+                  {{ $t('divers.settings.chooseFolder') }}
+              </button>
+          </div>
+          <label :class="[COLOR_CLASSES.textNormal, 'break-all']">{{ folderPath }}</label>
+          <div class="flex items-center">
+            <input
+            id="deleteAfterOCR"
+            type="checkbox"
+            v-model="deleteAfterOCR"
+            />
+            <label :class="[COLOR_CLASSES.textNormal, 'p-2']">{{ $t('divers.settings.deleteAfterOCR') }}</label>
+          </div>
         </div>
         <div :class="[COLOR_CLASSES.bgSecondary, 'border-2 border-[#363634] rounded-lg', 'rounded-lg p-3']">
               <input
@@ -65,6 +73,7 @@ async function selectFolder() {
 }
 
 const folderPath = useLocalStorage("settings.folderPath")
+const deleteAfterOCR = useLocalStorage("settings.deleteAfterOCR", false)
 const launchOnStartup = useLocalStorage("settings.launchOnStartup", false)
 const minimizeToTray = useLocalStorage("settings.minimizeToTray", false)
 // Synchronise l'option minimizeToTray avec le backend Rust

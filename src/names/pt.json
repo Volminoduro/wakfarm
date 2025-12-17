@@ -10223,7 +10223,8 @@
         "defaultFolder": "Pasta padrão",
         "launchOnStartup": "Iniciar o aplicativo na inicialização do Windows",
         "chooseFolder": "Escolher pasta",
-        "minimizeToTray": "Minimizar para a bandeja do sistema (ícones ocultos)"
+        "minimizeToTray": "Minimizar para a bandeja do sistema (ícones ocultos)",
+        "deleteAfterOCR": "Excluir a captura de tela após o processamento (OCR)"
     }
   }
 }
