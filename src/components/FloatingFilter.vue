@@ -1,60 +1,57 @@
 <template>
-  <div :class="COLOR_CLASSES.configBg" class="p-2" style="contain: layout style;">
+  <div class="cf-panel-lg p-2" style="contain: layout style;">
     <div class="mb-2">
-      <h2 :class="['text-2xl', COLOR_CLASSES.titlePrimary]">Filtres</h2>
+      <h2 class="text-2xl cf-text-light">Filtres</h2>
     </div>
 
     <div>
         <table class="w-full" style="table-layout: fixed;">
           <thead>
             <tr>
-              <th :class="['text-center font-medium pb-2 text-base', COLOR_CLASSES.textSecondary]">{{ $t('divers.config_min_rate') }}</th>
-              <th :class="['text-center font-medium pb-2 text-base', COLOR_CLASSES.textSecondary]">{{ $t('divers.config_min_profit') }}</th>
-              <th :class="['text-center font-medium pb-2 text-base', COLOR_CLASSES.textSecondary]">{{ $t('divers.config_min_total') }}</th>
-              <th :class="['text-center font-medium pb-2 text-base', COLOR_CLASSES.textSecondary]">{{ $t('divers.level_ranges_title') }}</th>
-              <th :class="['text-center font-medium pb-2 text-base', COLOR_CLASSES.textSecondary]" colspan="2">{{ $t('divers.config_server') }}</th>
+              <th class="text-center font-medium pb-2 text-base cf-text-secondary">{{ $t('divers.config_min_rate') }}</th>
+              <th class="text-center font-medium pb-2 text-base text-slate-300">{{ $t('divers.config_min_profit') }}</th>
+              <th class="text-center font-medium pb-2 text-base text-slate-300">{{ $t('divers.config_min_total') }}</th>
+              <th class="text-center font-medium pb-2 text-base text-slate-300">{{ $t('divers.level_ranges_title') }}</th>
+              <th class="text-center font-medium pb-2 text-base text-slate-300" colspan="2">{{ $t('divers.config_server') }}</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td class="text-center">
-                <div class="input-wrapper" style="width: 70px; margin: 0 auto;">
+                <div class="input-wrapper w-17.5 mx-auto">
                   <input
                     type="text"
                     :value="formatRateInput(store.config.minDropRatePercent)"
                     @input="updateMinDropRate"
-                    :class="[COLOR_CLASSES.input, 'rounded px-2 py-1 rate-input-padding']"
-                    style="width: 70px;"
+                    class="cf-input rounded px-2 py-1 rate-input-padding w-17.5"
                   />
                   <span class="rate-icon">%</span>
                 </div>
               </td>
               <td class="text-center">
-                <div class="input-wrapper" style="width: 140px; margin: 0 auto;">
+                <div class="input-wrapper w-35 mx-auto">
                   <input
                     type="text"
                     :value="formatInputNumber(store.config.minItemProfit)"
                     @input="updateMinItemProfit"
-                    :class="[COLOR_CLASSES.input, 'rounded px-2 py-1 kamas-input-padding']"
-                    style="width: 140px;"
+                    class="cf-input rounded px-2 py-1 kamas-input-padding w-35"
                   />
                   <span class="kamas-icon">₭</span>
                 </div>
               </td>
               <td class="text-center">
-                <div class="input-wrapper" style="width: 140px; margin: 0 auto;">
+                <div class="input-wrapper w-35 mx-auto">
                   <input
                     type="text"
                     :value="formatInputNumber(store.config.minInstanceTotal)"
                     @input="updateMinInstanceTotal"
-                    :class="[COLOR_CLASSES.input, 'rounded px-2 py-1 kamas-input-padding']"
-                    style="width: 140px;"
+                    class="cf-input rounded px-2 py-1 kamas-input-padding w-35"
                   />
                   <span class="kamas-icon">₭</span>
                 </div>
               </td>
               <td class="text-center">
-                <div style="width: 160px; margin: 0 auto;">
+                <div class="w-40 mx-auto">
                   <LevelRangeFilter />
                 </div>
               </td>
@@ -63,13 +60,13 @@
                   <select 
                     id="server"
                     v-model="store.config.server"
-                    :class="[COLOR_CLASSES.select, 'w-[160px]']"
+                    class="cf-select w-40"
                   >
                     <option v-for="server in jsonStore.servers" :key="server.id" :value="server.id">
                       {{ $t("divers." + server.name_key) }}
                     </option>
                   </select>
-                  <div :class="['text-xs leading-tight w-[70px] text-center', COLOR_CLASSES.textMuted]">
+                  <div class="text-xs leading-tight w-17.5 text-center cf-text-muted">
                     <div v-if="jsonStore.pricesLastUpdate">
                       <div>{{ jsonStore.pricesLastUpdate.split(' ')[0] }}</div>
                       <div>{{ jsonStore.pricesLastUpdate.split(' ')[1] }}</div>
@@ -88,7 +85,6 @@
 <script setup>
 import { useAppStore } from '@/stores/useAppStore'
 import { formatInputNumber, formatRateInput, parseFormattedNumber } from '@/utils/formatters'
-import { COLOR_CLASSES } from '@/constants/colors'
 import LevelRangeFilter from './LevelRangeFilter.vue'
 import { useJsonStore } from '@/stores/useJsonStore'
 
@@ -158,44 +154,16 @@ input[type=number] {
 .kamas-icon,
 .rate-icon {
   position: absolute;
-  right: 12px;
+  right: 0.75rem;
   top: 50%;
   margin-top: -0.5em;
   color: #9CA3AF;
   pointer-events: none;
-  font-size: 14px;
   font-weight: 500;
   line-height: 1;
 }
 
-/* Custom checkbox styling */
-.custom-checkbox {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  width: 24px;
-  height: 24px;
-  border: 2px solid rgba(211, 253, 56, 0.4);
-  border-radius: 4px;
-  background-color: #334155;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.15s ease;
-}
-
-.custom-checkbox:hover {
-  border-color: rgba(211, 253, 56, 0.6);
-}
-
-.custom-checkbox:checked {
-  background-color: #d3fd38;
-  border-color: #d3fd38;
-}
-.custom-checkbox:focus {
-  outline: 2px solid #d3fd38;
-  outline-offset: 2px;
-  border-color: #d3fd38;
-}
+/* custom checkbox styles moved to global src/style.css */
 
 /* Smooth expand/collapse transition with GPU acceleration */
 .expand-enter-active,

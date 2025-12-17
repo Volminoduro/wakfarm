@@ -3,9 +3,7 @@
     v-if="bossId && bossId > 0"
     :src="bossIconUrl"
     :alt="'Boss'"
-    :height="'32px'"
-    class="object-contain flex-shrink-0"
-    style="max-height:32px;"
+    class="object-contain shrink-0 h-8 max-h-8"
     @error="$event.target.style.display='none'"
   />
 </template>

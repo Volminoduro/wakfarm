@@ -1,36 +1,36 @@
 <template>
-    <div class="px-8 py-6 max-w-[1920px] mx-auto">
-        <div :class="[COLOR_CLASSES.bgSecondary, 'border-2 border-[#363634] rounded-lg', 'rounded-lg p-3 mb-3']">            
+        <div class="px-8 py-6 max-w-480 mx-auto">
+          <div class="cf-panel mb-3">            
           <div class="flex items-center gap-2 mb-2">
-              <label for="folderPath" :class="COLOR_CLASSES.textNormal">{{ $t('divers.settings.folderPath') }}</label>
+              <label for="folderPath" class="cf-text-normal">{{ $t('divers.settings.folderPath') }}</label>
               <button type="button" @click="selectFolder" class="px-2 py-1 bg-slate-700 rounded text-xs">
                   {{ $t('divers.settings.chooseFolder') }}
               </button>
           </div>
-          <label :class="[COLOR_CLASSES.textNormal, 'break-all']">{{ folderPath }}</label>
+          <label class="cf-text-normal break-all">{{ folderPath }}</label>
           <div class="flex items-center">
             <input
             id="deleteAfterOCR"
             type="checkbox"
             v-model="deleteAfterOCR"
             />
-            <label :class="[COLOR_CLASSES.textNormal, 'p-2']">{{ $t('divers.settings.deleteAfterOCR') }}</label>
+            <label class="cf-text-normal p-2">{{ $t('divers.settings.deleteAfterOCR') }}</label>
           </div>
         </div>
-        <div :class="[COLOR_CLASSES.bgSecondary, 'border-2 border-[#363634] rounded-lg', 'rounded-lg p-3']">
+        <div class="cf-panel">
               <input
                 id="launchOnStartup"
                 type="checkbox"
                 v-model="launchOnStartup"
               />
-              <label :class="[COLOR_CLASSES.textNormal, 'p-2']">{{ $t('divers.settings.launchOnStartup') }}</label>
+              <label class="cf-text-normal p-2">{{ $t('divers.settings.launchOnStartup') }}</label>
             <div class="mt-4 flex items-center gap-2">
               <input
                 id="minimizeToTray"
                 type="checkbox"
                 v-model="minimizeToTray"
               />
-              <label for="minimizeToTray" :class="COLOR_CLASSES.textNormal">
+              <label for="minimizeToTray" class="cf-text-normal">
                 {{ $t('divers.settings.minimizeToTray') }}
               </label>
             </div>
@@ -39,7 +39,6 @@
 </template>
 
 <script setup>
-import { COLOR_CLASSES } from '@/constants/colors'
 import { open } from '@tauri-apps/plugin-dialog'
 import { useLocalStorage } from '@/composables/useLocalStorage'
 import { LS_KEYS } from '@/constants/localStorageKeys'

@@ -2,19 +2,18 @@
   <div>
     <!-- Sub Navigation + Tab Headers (sticky under main header) -->
     <div class="sticky z-30" :style="{ top: 'var(--app-header-height)' }">
-      <nav :class="['flex items-center border-b', COLOR_CLASSES.bgSecondaryOpacity, COLOR_CLASSES.borderPrimary]">
+      <nav class="flex items-center border-b cf-bg-secondary cf-border-primary">
         <button 
           @click="subTab = 'time'" 
-          :class="['flex-1 py-2 transition-all font-semibold text-base flex items-center justify-center gap-2', COLOR_CLASSES.tabSeparator, subTab === 'time' ? COLOR_CLASSES.activeTab : COLOR_CLASSES.inactiveTab]"
-          :style="`border-right-color: ${TAB_SEPARATOR} !important; ${subTab === 'time' ? `text-shadow: ${ACTIVE_TAB_TEXT_SHADOW};` : ''}`">
+          :class="['cf-tab', subTab === 'time' ? 'cf-tab--active' : 'cf-tab--inactive']"
+          :style="subTab === 'time' ? 'text-shadow: var(--active-tab-text-shadow);' : ''">
           <span>Kamas /</span>
           <input 
             type="number"
             v-model.number="timePeriod"
             @click.stop
             @input="validateTimePeriod"
-            :class="[COLOR_CLASSES.input, 'text-sm py-0 px-2 text-center']"
-            style="width: 65px; height: 24px;"
+            class="cf-input text-sm py-0 px-2 text-center w-16 h-6"
             min="1"
             max="999"
             placeholder="60"
@@ -22,15 +21,15 @@
           <span>mins</span>
         </button>
         <button 
-          @click="subTab = 'config'" 
-          :class="['flex-1 py-2 transition-all font-semibold text-base', subTab === 'config' ? COLOR_CLASSES.activeTab : COLOR_CLASSES.inactiveTab]"
-          :style="subTab === 'config' ? `text-shadow: ${ACTIVE_TAB_TEXT_SHADOW};` : ''">
+          @click="subTab = 'config' " 
+          :class="['cf-tab', subTab === 'config' ? 'cf-tab--active' : 'cf-tab--inactive']"
+          :style="subTab === 'config' ? 'text-shadow: var(--active-tab-text-shadow);' : ''">
           {{ $t('divers.runs_config') || 'Configuration' }}
         </button>
       </nav>
 
       <!-- Header for Configuration Tab -->
-      <div v-if="subTab === 'config'" :class="['px-4 py-2 border-b flex items-center gap-4 h-[50px]', COLOR_CLASSES.bgSecondaryOpacity, COLOR_CLASSES.borderPrimary]">
+      <div v-if="subTab === 'config'" class="cf-section-header">
         <!-- Toggle all button -->
         <ToggleAllButton
           :isExpanded="allExpanded"
@@ -38,41 +37,24 @@
         />
 
         <!-- Import button -->
-        <button 
-          @click="importRuns"
-          :class="['px-4 py-2 text-sm rounded font-semibold transition-colors', 'bg-green-900/50 hover:bg-green-800 text-green-200']"
-          :title="$t('divers.runs_import') || 'Importer depuis le presse-papier'">
-          📥 {{ $t('divers.runs_import') || 'Importer' }}
-        </button>
+        <button @click="importRuns" class="cf-action-btn cf-action-btn--success" :title="$t('divers.runs_import') || 'Importer depuis le presse-papier'">📥 {{ $t('divers.runs_import') || 'Importer' }}</button>
 
         <!-- Export button -->
-        <button 
-          v-if="hasAnyRuns"
-          @click="exportRuns"
-          :class="['px-4 py-2 text-sm rounded font-semibold transition-colors', 'bg-blue-900/50 hover:bg-blue-800 text-blue-200']"
-          :title="$t('divers.runs_export') || 'Copier la configuration dans le presse-papier'">
-          📋 {{ $t('divers.runs_export') || 'Exporter' }}
-        </button>
+        <button v-if="hasAnyRuns" @click="exportRuns" class="cf-action-btn cf-action-btn--info" :title="$t('divers.runs_export') || 'Copier la configuration dans le presse-papier'">📋 {{ $t('divers.runs_export') || 'Exporter' }}</button>
 
         <!-- Remove all button -->
-        <button 
-          v-if="hasAnyRuns"
-          @click="removeAllRuns"
-          :class="['px-4 py-2 text-sm rounded font-semibold transition-colors', 'bg-red-900/50 hover:bg-red-800 text-red-200']"
-          :title="$t('divers.runs_remove_all') || 'Supprimer tous les runs'">
-          ✕ {{ $t('divers.runs_remove_all') || 'Supprimer tous les runs' }}
-        </button>
+        <button v-if="hasAnyRuns" @click="removeAllRuns" class="cf-action-btn cf-action-btn--danger" :title="$t('divers.runs_remove_all') || 'Supprimer tous les runs'">✕ {{ $t('divers.runs_remove_all') || 'Supprimer tous les runs' }}</button>
 
         <!-- Info text -->
-        <div class="flex-1 text-right">
-          <span :class="['text-sm', COLOR_CLASSES.textSecondary]">
+          <div class="flex-1 text-right">
+          <span class="text-sm cf-text-secondary">
             {{ sortedInstances.length }} {{ $t('divers.runs_instances') || 'instances disponibles' }}
           </span>
         </div>
       </div>
 
       <!-- Header for Kamas / Time Tab -->
-      <div v-if="subTab === 'time'" :class="['px-4 py-2 border-b h-[50px]', COLOR_CLASSES.bgSecondaryOpacity, COLOR_CLASSES.borderPrimary]">
+      <div v-if="subTab === 'time'" class="cf-section-header">
         <ToggleAllButton
           :isExpanded="allHourRunsExpanded"
           @toggle="toggleAllHourRuns"
@@ -81,16 +63,16 @@
     </div>
 
     <!-- Kamas / Time Tab -->
-    <div v-if="subTab === 'time'" class="px-8 py-6 max-w-[1920px] mx-auto">
+    <div v-if="subTab === 'time'" class="cf-page">
 
       <!-- Runs list -->
       <div v-if="!jsonStore.loaded" class="text-center">
       </div>
-      <div v-else-if="sortedHourRuns.length === 0" :class="[COLOR_CLASSES.bgSecondary, COLOR_CLASSES.borderCard, 'rounded-lg p-6']">
+      <div v-else-if="sortedHourRuns.length === 0" class="cf-empty-state">
         <!-- No runs configured at all -->
         <p 
           v-if="!hasAnyRuns"
-          :class="[COLOR_CLASSES.textSecondary, 'cursor-pointer hover:underline']"
+          class="cf-text-secondary cursor-pointer hover:underline"
           @click="subTab = 'config'"
         >
           {{ $t('divers.kamas_hour_no_runs') || 'Aucun run configuré. Allez dans l\'onglet "Configuration" pour en créer.' }}
@@ -99,7 +81,7 @@
         <!-- Runs exist but none pass current filters -->
         <p
           v-else
-          :class="[COLOR_CLASSES.textSecondary]">
+          class="cf-text-secondary">
           {{ $t('divers.kamas_hour_no_runs_matching_filters') || 'Aucun run configuré ne correspond aux filtres actuels. Vérifiez vos filtres ou rendez-vous dans l\'onglet "Configuration".' }}
         </p>
       </div>
@@ -114,7 +96,7 @@
     </div>
 
     <!-- Configuration Tab -->
-    <div v-else class="px-8 py-6 max-w-[1920px] mx-auto">
+    <div v-else class="px-8 py-6 max-w-480 mx-auto">
     <!-- Loading state -->
     <div v-if="!jsonStore.loaded" class="text-center py-8">
     </div>
@@ -137,7 +119,7 @@ import { useJsonStore } from '@/stores/useJsonStore'
 import { useConfigRunStore } from '@/stores/useConfigRunStore'
 import { useLocalStorage } from '@/composables/useLocalStorage'
 import { LS_KEYS } from '@/constants/localStorageKeys'
-import { COLOR_CLASSES, TAB_SEPARATOR, ACTIVE_TAB_TEXT_SHADOW } from '@/constants/colors'
+// use CSS variables instead of importing color constants
 import RunConfigCard from '@/components/RunConfig/RunConfigCard.vue'
 import InstanceCard from '@/components/Instance/InstanceCard.vue'
 import ToggleAllButton from '@/components/ToggleAllButton.vue'

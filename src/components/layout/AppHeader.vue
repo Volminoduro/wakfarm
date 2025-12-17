@@ -1,9 +1,9 @@
 <template>
-  <header ref="appHeaderRef" :class="['sticky top-0 left-0 right-0 shadow-xl z-40', COLOR_CLASSES.headerBg]">
+  <header ref="appHeaderRef" class="sticky top-0 left-0 right-0 shadow-xl z-40 cf-header">
     <!-- Top Bar: Title and Language Selector -->
     <div class="px-8 py-2 flex justify-between items-center">
       <div class="flex items-center gap-3">
-        <h1 :class="['text-4xl font-bold', COLOR_CLASSES.titleHeader]" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">KommuFlow</h1>
+        <h1 class="text-4xl font-bold cf-title-header" style="text-shadow: 0.125rem 0.125rem 0.25rem rgba(0,0,0,0.5);">KommuFlow</h1>
         
         <!-- Alerts handled by HeaderAlerts component -->
         <HeaderAlerts />
@@ -21,26 +21,26 @@
     <nav class="flex items-center">
       <button 
         @click="mainTab = 'rentability'" 
-        :class="['flex-1 py-2 transition-all font-semibold text-lg', COLOR_CLASSES.tabSeparator, mainTab === 'rentability' ? COLOR_CLASSES.activeMainTab : COLOR_CLASSES.inactiveMainTab]"
-        :style="`border-right-color: ${TAB_SEPARATOR} !important; ${mainTab === 'rentability' ? `text-shadow: ${ACTIVE_TAB_TEXT_SHADOW};` : ''}`">
+        :class="['flex-1 py-2 transition-all font-semibold text-lg', 'cf-tab-separator', mainTab === 'rentability' ? 'cf-tab-active' : 'cf-tab-inactive']"
+        :style="`border-right-color: var(--color-tab-separator) !important; ${mainTab === 'rentability' ? 'text-shadow: var(--active-tab-text-shadow);' : ''}`">
         {{ $t('divers.tab_rentability') }}
       </button>
       <button 
         @click="mainTab = 'runs'" 
-        :class="['flex-1 py-2 transition-all font-semibold text-lg', COLOR_CLASSES.tabSeparator, mainTab === 'runs' ? COLOR_CLASSES.activeMainTab : COLOR_CLASSES.inactiveMainTab]"
-        :style="`border-right-color: ${TAB_SEPARATOR} !important; ${mainTab === 'runs' ? `text-shadow: ${ACTIVE_TAB_TEXT_SHADOW};` : ''}`">
+        :class="['flex-1 py-2 transition-all font-semibold text-lg', 'cf-tab-separator', mainTab === 'runs' ? 'cf-tab-active' : 'cf-tab-inactive']"
+        :style="`border-right-color: var(--color-tab-separator) !important; ${mainTab === 'runs' ? 'text-shadow: var(--active-tab-text-shadow);' : ''}`">
         {{ $t('divers.tab_runs') }}
       </button>
       <button 
         @click="mainTab = 'prices'" 
-        :class="['flex-1 py-2 transition-all font-semibold text-lg', mainTab === 'prices' ? COLOR_CLASSES.activeMainTab : COLOR_CLASSES.inactiveMainTab]"
-        :style="mainTab === 'prices' ? `text-shadow: ${ACTIVE_TAB_TEXT_SHADOW};` : ''">
+        :class="['flex-1 py-2 transition-all font-semibold text-lg', mainTab === 'prices' ? 'cf-tab-active' : 'cf-tab-inactive']"
+        :style="mainTab === 'prices' ? 'text-shadow: var(--active-tab-text-shadow);' : ''">
         {{ $t('divers.tab_prices') }}
       </button>
       <button 
         @click="mainTab = 'settings'" 
-        :class="['flex-1 py-2 transition-all font-semibold text-lg', mainTab === 'settings' ? COLOR_CLASSES.activeMainTab : COLOR_CLASSES.inactiveMainTab]"
-        :style="mainTab === 'settings' ? `text-shadow: ${ACTIVE_TAB_TEXT_SHADOW};` : ''">
+        :class="['flex-1 py-2 transition-all font-semibold text-lg', mainTab === 'settings' ? 'cf-tab-active' : 'cf-tab-inactive']"
+        :style="mainTab === 'settings' ? 'text-shadow: var(--active-tab-text-shadow);' : ''">
         {{ $t('divers.tab_settings') }}
       </button>
     </nav>
@@ -53,7 +53,6 @@ import LanguageSelector from '@/components/LanguageSelector.vue'
 import FloatingFilter from '@/components/FloatingFilter.vue'
 import HeaderAlerts from '@/components/HeaderAlerts.vue'
 import DisplayToggle from '@/components/DetailedToggle.vue'
-import { COLOR_CLASSES, TAB_SEPARATOR, ACTIVE_TAB_TEXT_SHADOW } from '@/constants/colors'
 import { useLocalStorage } from '@/composables/useLocalStorage'
 import { LS_KEYS } from '@/constants/localStorageKeys'
 

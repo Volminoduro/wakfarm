@@ -2,9 +2,8 @@
   <div class="relative" ref="dropdownRef">
     <button
       @click="isOpen = !isOpen"
-      :class="[COLOR_CLASSES.select, 'w-full text-left flex items-center justify-between']"
-      type="button"
-      style="min-width: 160px;">
+      class="cf-select w-full text-left flex items-center justify-between min-w-40"
+      type="button">
       <span class="font-mono">{{ getDisplayText() }}</span>
       <svg 
         :class="['w-4 h-4 transition-transform', isOpen ? 'rotate-180' : '']"
@@ -17,26 +16,25 @@
     
     <div 
       v-if="isOpen"
-      :class="['absolute z-50 mt-1 w-full rounded shadow-lg', COLOR_CLASSES.bgSecondary, COLOR_CLASSES.borderCard]"
-      style="max-height: 300px; overflow-y: auto;">
+      class="absolute z-50 mt-1 w-full rounded shadow-lg cf-card max-h-75 overflow-y-auto">
       <div class="p-2">
         <button 
           @click="toggleAll"
-          :class="['w-full text-sm px-2 py-1 rounded mb-2', COLOR_CLASSES.buttonToggle]">
+          class="w-full text-sm px-2 py-1 rounded mb-2 cf-button-toggle">
           {{ store.config.levelRanges.length === LEVEL_RANGES.length ? $t('divers.level_ranges_toggle_none') : $t('divers.level_ranges_toggle_all') }}
         </button>
         <div class="space-y-1">
-          <label
+            <label
             v-for="(range, index) in LEVEL_RANGES"
             :key="index"
-            class="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-700/50 cursor-pointer">
+            class="cf-dropdown-item">
             <input
               type="checkbox"
               :checked="isRangeActive(index)"
               @change="toggleRange(index)"
               class="custom-checkbox-small"
             />
-            <span :class="COLOR_CLASSES.textNormal">{{ range.label }}</span>
+            <span class="text-slate-200">{{ range.label }}</span>
           </label>
         </div>
       </div>
@@ -48,7 +46,6 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '@/stores/useAppStore'
 import { LEVEL_RANGES } from '@/constants'
-import { COLOR_CLASSES } from '@/constants/colors'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -112,25 +109,5 @@ const getDisplayText = () => {
 </script>
 
 <style scoped>
-.custom-checkbox-small {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(211, 253, 56, 0.4);
-  border-radius: 3px;
-  background-color: #334155;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.custom-checkbox-small:hover {
-  border-color: rgba(211, 253, 56, 0.6);
-}
-
-.custom-checkbox-small:checked {
-  background-color: #d3fd38;
-  border-color: #d3fd38;
-}
+/* custom-checkbox-small now provided globally in src/style.css */
 </style>

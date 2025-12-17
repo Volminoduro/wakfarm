@@ -1,32 +1,32 @@
 <template>
-  <div class="px-8 py-6 max-w-[1920px] mx-auto">
+  <div class="px-8 py-6 max-w-480 mx-auto">
     <!-- Filters and Pagination Controls -->
-    <div :class="[COLOR_CLASSES.bgSecondary, 'border-2 border-[#363634] rounded-lg', 'rounded-lg p-4 mb-4']">
+    <div class="bg-secondary border-2 border-wakfu-gray rounded-lg p-4 mb-4">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <!-- Search by name -->
         <div class="relative" ref="searchDropdownRef">
-          <label :class="['block text-sm font-medium mb-2', COLOR_CLASSES.textSecondary]">{{ $t('divers.prices_search_name') }}</label>
+          <label class="block text-sm font-medium mb-2 cf-text-secondary">{{ $t('divers.prices_search_name') }}</label>
           <input
             v-model="searchName"
             @input="onSearchInput"
             @focus="showAutocomplete = true"
             type="text"
             :placeholder="$t('divers.prices_search_placeholder')"
-            :class="[COLOR_CLASSES.input, 'w-full rounded px-3 py-2']"
+            class="cf-input w-full rounded px-3 py-2"
           />
           
           <div v-if="showAutocomplete && autocompleteItems.length > 0" 
-               :class="['absolute z-10 mt-1 w-full rounded shadow-lg max-h-64 overflow-y-auto', COLOR_CLASSES.bgSecondary, COLOR_CLASSES.borderCard]">
+            class="cf-dropdown">
             <div class="p-1">
               <button
                 v-for="item in autocompleteItems"
                 :key="item.id"
                 @click="selectItem(item)"
-                class="w-full text-left px-3 py-2 hover:bg-slate-700/50 rounded transition-colors">
-                <span :style="{ color: getRarityColor(item.rarity) }" class="font-bold">
+                class="cf-autocomplete-item">
+                <span :class="['font-bold', getRarityClass(item.rarity)]">
                   {{ item.name }}
                 </span>
-                <span :class="COLOR_CLASSES.textMuted" class="text-sm ml-2">
+                <span class="text-slate-400 text-sm ml-2">
                   ({{ $t('divers.prices_col_level') }} {{ item.level }})
                 </span>
               </button>
@@ -36,42 +36,41 @@
         
         <!-- Filter by rarity -->
         <div class="relative" ref="rarityDropdownRef">
-          <label :class="['block text-sm font-medium mb-2', COLOR_CLASSES.textSecondary]">{{ $t('divers.prices_filter_rarity') }}</label>
+          <label class="block text-sm font-medium mb-2 cf-text-secondary">{{ $t('divers.prices_filter_rarity') }}</label>
           <button
             @click="isRarityDropdownOpen = !isRarityDropdownOpen"
-            :class="[COLOR_CLASSES.select, 'w-full text-left flex items-center justify-between font-mono']"
-            style="min-width: 160px;">
+            class="cf-select min-w-40 w-auto text-left flex items-center justify-between font-mono">
             <span>{{ getRarityDisplayText() }}</span>
             <span>{{ isRarityDropdownOpen ? '▲' : '▼' }}</span>
           </button>
           
           <div v-if="isRarityDropdownOpen" 
-               :class="['absolute z-10 mt-1 w-full rounded shadow-lg max-h-64 overflow-y-auto', COLOR_CLASSES.bgSecondary, COLOR_CLASSES.borderCard]">
+            class="cf-dropdown">
             <div class="p-2 space-y-1">
-              <div class="flex gap-2 mb-2 pb-2 border-b border-slate-700">
+                <div class="flex gap-2 mb-2 pb-2 border-b border-slate-700">
                 <button 
                   @click="toggleAllRarities(true)"
-                  :class="['flex-1 px-2 py-1 text-xs rounded transition-colors', COLOR_CLASSES.button, COLOR_CLASSES.textSecondary]">
+                  class="cf-dropdown-action">
                   {{ $t('divers.level_ranges_toggle_all') }}
                 </button>
                 <button 
                   @click="toggleAllRarities(false)"
-                  :class="['flex-1 px-2 py-1 text-xs rounded transition-colors', COLOR_CLASSES.button, COLOR_CLASSES.textSecondary]">
+                  class="cf-dropdown-action">
                   {{ $t('divers.level_ranges_toggle_none') }}
                 </button>
               </div>
               
-              <label 
+                <label 
                 v-for="r in 8" 
                 :key="r-1"
-                class="flex items-center gap-2 px-2 py-1 hover:bg-slate-700/50 rounded cursor-pointer">
+                class="cf-dropdown-item">
                 <input
                   type="checkbox"
                   :checked="filterRarities.includes(r-1)"
                   @change="toggleRarity(r-1)"
                   class="custom-checkbox-small"
                 />
-                <span :style="{ color: getRarityColor(r-1) }">
+                <span :class="getRarityClass(r-1)">
                   {{ getRarityName(r-1) }}
                 </span>
               </label>
@@ -81,17 +80,17 @@
         
         <!-- Filter by level -->
         <div>
-          <label :class="['block text-sm font-medium mb-2', COLOR_CLASSES.textSecondary]">{{ $t('divers.prices_filter_level') }}</label>
+          <label class="block text-sm font-medium mb-2 cf-text-secondary">{{ $t('divers.prices_filter_level') }}</label>
           <div class="flex gap-2">
             <input
-              v-model.number="filterLevelMin"
-              @input="validateLevelMin"
-              type="number"
-              min="1"
-              max="245"
-              :placeholder="$t('divers.prices_min')"
-              :class="[COLOR_CLASSES.input, 'w-full rounded px-3 py-2']"
-            />
+                v-model.number="filterLevelMin"
+                @input="validateLevelMin"
+                type="number"
+                min="1"
+                max="245"
+                :placeholder="$t('divers.prices_min')"
+                class="cf-input w-full rounded px-3 py-2"
+              />
             <input
               v-model.number="filterLevelMax"
               @input="validateLevelMax"
@@ -99,34 +98,33 @@
               min="1"
               max="245"
               :placeholder="$t('divers.prices_max')"
-              :class="[COLOR_CLASSES.input, 'w-full rounded px-3 py-2']"
+              class="cf-input w-full rounded px-3 py-2"
             />
           </div>
         </div>
         
         <!-- Filter by instances -->
         <div class="relative" ref="instancesDropdownRef">
-          <label :class="['block text-sm font-medium mb-2', COLOR_CLASSES.textSecondary]">{{ $t('divers.prices_filter_instances') }}</label>
+          <label class="block text-sm font-medium mb-2 cf-text-secondary">{{ $t('divers.prices_filter_instances') }}</label>
           <button
             @click="isInstancesDropdownOpen = !isInstancesDropdownOpen"
-            :class="[COLOR_CLASSES.select, 'w-full text-left flex items-center justify-between font-mono']"
-            style="min-width: 160px;">
+            class="cf-select min-w-40 w-auto text-left flex items-center justify-between font-mono">
             <span>{{ getInstancesDisplayText() }}</span>
             <span>{{ isInstancesDropdownOpen ? '▲' : '▼' }}</span>
           </button>
           
           <div v-if="isInstancesDropdownOpen" 
-               :class="['absolute z-10 mt-1 w-full rounded shadow-lg max-h-64 overflow-y-auto', COLOR_CLASSES.bgSecondary, COLOR_CLASSES.borderCard]">
+            class="cf-dropdown">
             <div class="p-2 space-y-1">
-              <div class="flex gap-2 mb-2 pb-2 border-b border-slate-700">
+                <div class="flex gap-2 mb-2 pb-2 border-b border-slate-700">
                 <button 
                   @click="toggleAllInstances(true)"
-                  :class="['flex-1 px-2 py-1 text-xs rounded transition-colors', COLOR_CLASSES.button, COLOR_CLASSES.textSecondary]">
+                  class="cf-dropdown-action">
                   {{ $t('divers.level_ranges_toggle_all') }}
                 </button>
                 <button 
                   @click="toggleAllInstances(false)"
-                  :class="['flex-1 px-2 py-1 text-xs rounded transition-colors', COLOR_CLASSES.button, COLOR_CLASSES.textSecondary]">
+                  class="cf-dropdown-action">
                   {{ $t('divers.level_ranges_toggle_none') }}
                 </button>
               </div>
@@ -134,14 +132,14 @@
               <label 
                 v-for="inst in allInstancesList" 
                 :key="inst.id"
-                class="flex items-center gap-2 px-2 py-1 hover:bg-slate-700/50 rounded cursor-pointer">
+                class="cf-dropdown-item">
                 <input
                   type="checkbox"
                   :checked="filterInstances.includes(inst.id)"
                   @change="toggleInstance(inst.id)"
                   class="custom-checkbox-small"
                 />
-                <span :class="COLOR_CLASSES.textNormal">
+                <span class="text-slate-200">
                   {{ $t("instances." + inst.id) }}
                 </span>
               </label>
@@ -151,11 +149,11 @@
       </div>
       
       <!-- Items per page selector -->
-      <div class="flex items-center gap-4">
-        <label :class="['text-sm font-medium', COLOR_CLASSES.textSecondary]">{{ $t('divers.prices_per_page') }}</label>
+        <div class="flex items-center gap-4">
+        <label class="text-sm font-medium cf-text-secondary">{{ $t('divers.prices_per_page') }}</label>
         <select
           v-model.number="itemsPerPage"
-          :class="[COLOR_CLASSES.select]">
+          class="cf-select">
           <option :value="25">25</option>
           <option :value="50">50</option>
           <option :value="100">100</option>
@@ -165,30 +163,30 @@
     </div>
     
     <!-- Table -->
-    <div :class="[COLOR_CLASSES.card]">
+    <div class="cf-card">
       <div class="overflow-x-auto">
         <table class="w-full">
-          <thead :class="['font-bold truncate', COLOR_CLASSES.textLight]">
+          <thead class="font-bold truncate text-slate-100">
             <tr>
-              <th @click="sortBy('name')" :class="['px-4 py-3 text-left cursor-pointer select-none', 'hover:bg-[#4e4839]']">
+              <th @click="sortBy('name')" :class="['cf-table-header','cf-table-header--hover']">
                 <div class="flex items-center gap-2">
                   {{ $t('divers.prices_col_name') }}
                   <span v-if="sortColumn === 'name'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
                 </div>
               </th>
-              <th @click="sortBy('level')" :class="['px-4 py-3 text-left cursor-pointer select-none', 'hover:bg-[#4e4839]']">
+              <th @click="sortBy('level')" :class="['cf-table-header','cf-table-header--hover']">
                 <div class="flex items-center gap-2">
                   {{ $t('divers.prices_col_level') }}
                   <span v-if="sortColumn === 'level'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
                 </div>
               </th>
-              <th @click="sortBy('instances')" :class="['px-4 py-3 text-left cursor-pointer select-none', 'hover:bg-[#4e4839]']">
+              <th @click="sortBy('instances')" :class="['cf-table-header','cf-table-header--hover']">
                 <div class="flex items-center gap-2">
                   {{ $t('divers.prices_col_instances') }}
                   <span v-if="sortColumn === 'instances'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
                 </div>
               </th>
-              <th @click="sortBy('price')" :class="['px-4 py-3 text-right cursor-pointer select-none', 'hover:bg-[#4e4839]']">
+              <th @click="sortBy('price')" :class="['cf-table-header','cf-table-header--hover','text-right']">
                 <div class="flex items-center justify-end gap-2">
                   {{ $t('divers.prices_col_price') }}
                   <span v-if="sortColumn === 'price'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
@@ -200,22 +198,22 @@
             <tr 
               v-for="item in paginatedItems" 
               :key="item.id"
-              :class="['border-t border-[#363634] hover:border-[#625946] transition-colors']">
+              class="cf-table-row-hover">
               <td class="px-4 py-3">
-                <span :style="{ color: getRarityColor(item.rarity) }" class="font-bold">
+                <span :class="['font-bold', getRarityClass(item.rarity)]">
                   {{ item.name }}
                 </span>
               </td>
-              <td :class="['px-4 py-3', COLOR_CLASSES.textNormal]">{{ item.level }}</td>
-              <td :class="['px-4 py-3', COLOR_CLASSES.textSecondary]">
+              <td class="px-4 py-3 text-slate-200">{{ item.level }}</td>
+              <td class="px-4 py-3 cf-text-secondary">
                 <span v-if="item.instances && item.instances.length > 0" class="text-sm">
                   {{ item.instances.join(', ') }}
                 </span>
-                <span v-else :class="COLOR_CLASSES.textMuted">—</span>
+                <span v-else class="text-slate-400">—</span>
               </td>
-              <td :class="['px-4 py-3 text-right', COLOR_CLASSES.textKamas]">
+              <td class="px-4 py-3 text-right text-kamas">
                 <span v-if="item.price != null">{{ formatNumber(item.price) }} ₭</span>
-                <span v-else :class="COLOR_CLASSES.textMuted">—</span>
+                <span v-else class="text-slate-400">—</span>
               </td>
             </tr>
           </tbody>
@@ -223,41 +221,21 @@
       </div>
       
       <!-- Footer with pagination -->
-      <div :class="['px-4 py-3 border-t border-[#363634]', COLOR_CLASSES.textLight,  'flex items-center justify-between']">
+      <div class="px-4 py-3 border-t border-wakfu-gray text-slate-100 flex items-center justify-between">
         <p :class="['text-sm']">
           {{ $t('divers.prices_showing') }} {{ startItem }} - {{ endItem }} {{ $t('divers.prices_of') }} {{ filteredAndSortedItems.length }} {{ $t('divers.prices_items') }}
         </p>
         
         <div class="flex items-center gap-2">
-          <button
-            @click="currentPage = 1"
-            :disabled="currentPage === 1"
-            :class="['px-3 py-1 rounded transition-colors', currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#4e4839]']">
-            ««
-          </button>
-          <button
-            @click="currentPage--"
-            :disabled="currentPage === 1"
-            :class="['px-3 py-1 rounded transition-colors', currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#4e4839]']">
-            ‹
-          </button>
+          <button @click="currentPage = 1" :disabled="currentPage === 1" :class="['cf-pag-btn', currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '']">««</button>
+          <button @click="currentPage--" :disabled="currentPage === 1" :class="['cf-pag-btn', currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '']">‹</button>
           
-          <span :class="['px-4 text-sm', COLOR_CLASSES.textNormal]">
+          <span class="px-4 text-sm text-slate-200">
             {{ $t('divers.prices_page') }} {{ currentPage }} / {{ totalPages }}
           </span>
           
-          <button
-            @click="currentPage++"
-            :disabled="currentPage === totalPages"
-            :class="['px-3 py-1 rounded transition-colors', currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#4e4839]']">
-            ›
-          </button>
-          <button
-            @click="currentPage = totalPages"
-            :disabled="currentPage === totalPages"
-            :class="['px-3 py-1 rounded transition-colors', currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#4e4839]']">
-            »»
-          </button>
+          <button @click="currentPage++" :disabled="currentPage === totalPages" :class="['cf-pag-btn', currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : '']">›</button>
+          <button @click="currentPage = totalPages" :disabled="currentPage === totalPages" :class="['cf-pag-btn', currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : '']">»»</button>
         </div>
       </div>
     </div>
@@ -269,7 +247,7 @@ import { ref, computed, watch } from 'vue'
 import { useLocalStorage } from '@/composables/useLocalStorage'
 import { LS_KEYS } from '@/constants/localStorageKeys'
 import { useClickOutside } from '@/composables/useClickOutside'
-import { COLOR_CLASSES, RARITY_COLORS } from '@/constants/colors'
+import { getRarityClass } from '@/utils/itemHelpers'
 import { formatNumber } from '@/utils/formatters'
 import { useJsonStore } from '@/stores/useJsonStore'
 import { useI18n } from 'vue-i18n'
@@ -555,10 +533,6 @@ function sortBy(column) {
     sortColumn.value = column
     sortDirection.value = 'asc'
   }
-}
-
-function getRarityColor(rarity) {
-  return RARITY_COLORS[rarity] || RARITY_COLORS[0]
 }
 
 function getRarityName(rarity) {

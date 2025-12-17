@@ -1,20 +1,144 @@
 @import "tailwindcss";
 
+@theme {
+  /* --- TAILWIND COLORS (Génèrent les classes bg-*, text-*, border-*) --- */
+  --color-bg-secondary: #1e2026;
+  --color-wakfu-beige: #625946;
+  --color-wakfu-gray: #363634;
+  --color-wakfu-text: #dadada;
+  --color-wakfu-text-alt: #edd299;
+  --color-tab-separator: #4e483a;
+  --color-kamas: #f4d89e;
+  
+  /* Couleurs pour les checkboxes (indispensables pour vos @apply) */
+  --color-checkbox-bg: #334155;
+  --color-checkbox-border: #d3fd38;
+  --color-checkbox-border-hover: rgba(211, 253, 56, 0.6);
+  --color-checkbox-checked: #d3fd38;
+  --color-checkbox-focus: #d3fd38;
+
+  /* --- SIZES AND EFFECTS (Utilisables via var()) --- */
+  --checkbox-radius: 0.25rem; /* 4px */
+  --checkbox-small-size: 1.125rem; /* 18px */
+  --checkbox-large-size: 1.5rem; /* 24px */
+  --active-tab-text-shadow: 0.0625rem 0.0625rem 0.125rem rgba(0,0,0,0.8), -0.0625rem -0.0625rem 0.125rem rgba(0,0,0,0.8), 0.0625rem -0.0625rem 0.125rem rgba(0,0,0,0.8), -0.0625rem 0.0625rem 0.125rem rgba(0,0,0,0.8);
+  
+  /* Ajout d'une couleur de fond par défaut pour le body */
+  --color-bg-primary: #121212;
+  --color-text-primary: #dadada;
+}
+
+/* --- BASE STYLES --- */
 body {
   font-family: 'Nunito', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-size: 16px;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  font-size: 1rem; /* 16px */
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Righteous', 'Nunito', sans-serif;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03125rem; /* 0.5px */
 }
 
-/* Shared animations */
+/* --- CUSTOM COMPONENTS --- */
+.cf-bg-secondary { @apply bg-bg-secondary; }
+.cf-border-primary { @apply border-slate-700; }
+.cf-text-secondary { @apply text-slate-300; }
+.cf-text-normal { @apply text-slate-200; }
+.cf-text-light { @apply text-slate-100; }
+.cf-text-muted { @apply text-slate-400; }
+.cf-text-kamas { @apply text-kamas; }
+
+.cf-input { @apply bg-slate-700 text-slate-100 focus:border-wakfu-beige focus:ring-1 focus:ring-wakfu-beige outline-none; }
+.cf-select { @apply bg-slate-700 text-slate-100 px-3 py-1 rounded focus:border-wakfu-beige focus:ring-1 focus:ring-wakfu-beige outline-none; }
+.cf-select-sm { @apply bg-slate-700 text-slate-100 px-2 py-1 rounded focus:border-wakfu-beige focus:ring-1 focus:ring-wakfu-beige outline-none; }
+
+.cf-card {
+  @apply border-2 rounded-lg shadow-lg hover:shadow-xl transition overflow-hidden bg-bg-secondary border-wakfu-gray;
+}
+.cf-card:hover { @apply border-wakfu-beige; }
+
+.cf-button-toggle { @apply text-slate-300 hover:bg-slate-700; }
+
+.cf-tab-separator { @apply border-r-2 border-tab-separator; }
+.cf-tab-active { @apply bg-wakfu-beige text-wakfu-text; }
+.cf-tab-inactive { @apply bg-wakfu-gray text-wakfu-text-alt hover:bg-wakfu-beige; }
+
+.cf-header { @apply bg-linear-to-b from-cyan-700 to-cyan-800; }
+.cf-title-header { @apply text-slate-100; }
+
+.cf-panel { @apply bg-bg-secondary border-2 border-wakfu-gray rounded-lg p-3; }
+.cf-panel-lg { @apply bg-bg-secondary border-2 border-wakfu-gray rounded-lg p-4; }
+
+.cf-footer { @apply bg-bg-secondary text-slate-400; }
+
+/* Dropdowns, autocomplete and list aliases */
+.cf-dropdown {
+  @apply absolute z-50 mt-1 w-full rounded shadow-lg max-h-64 overflow-y-auto bg-bg-secondary border border-wakfu-beige;
+}
+
+.cf-dropdown-action {
+  @apply flex-1 px-2 py-1 text-xs rounded transition-colors text-slate-300 hover:bg-slate-700;
+}
+
+.cf-autocomplete-item { @apply w-full text-left px-3 py-2 hover:bg-slate-700/50 rounded transition-colors; }
+
+.cf-table-row-hover { @apply border-t border-wakfu-gray hover:border-wakfu-beige transition-colors; }
+
+.cf-empty-state { @apply bg-bg-secondary border border-wakfu-beige rounded-lg p-6; }
+.cf-dropdown-item { @apply flex items-center gap-2 px-2 py-1 hover:bg-slate-700/50 rounded cursor-pointer; }
+
+/* Page container */
+.cf-page { @apply px-8 py-6 max-w-480 mx-auto; }
+
+/* Tabs */
+.cf-tab { @apply flex-1 py-2 transition-all font-semibold text-base flex items-center justify-center gap-2 border-r-2 border-tab-separator; }
+.cf-tab--active { @apply bg-wakfu-beige text-wakfu-text; }
+.cf-tab--inactive { @apply bg-wakfu-gray text-wakfu-text-alt hover:bg-wakfu-beige; }
+
+/* Small action buttons */
+.cf-action-btn { @apply px-4 py-2 text-sm rounded font-semibold transition-colors; }
+.cf-action-btn--success { @apply bg-green-900/50 hover:bg-green-800 text-green-200; }
+.cf-action-btn--info { @apply bg-blue-900/50 hover:bg-blue-800 text-blue-200; }
+.cf-action-btn--danger { @apply bg-red-900/50 hover:bg-red-800 text-red-200; }
+
+/* Section header */
+.cf-section-header { @apply px-4 py-2 border-b bg-bg-secondary border-slate-700 h-12.5 flex items-center gap-4; }
+
+/* Table */
+.cf-table-header { @apply px-4 py-3 text-left cursor-pointer select-none; }
+.cf-table-header--hover { @apply hover:bg-tab-separator; }
+.cf-table-cell { @apply px-4 py-3; }
+
+/* Pagination / small controls */
+.cf-pag-btn { @apply px-3 py-1 rounded transition-colors hover:bg-tab-separator; }
+.cf-control-sm { @apply px-2 py-1 rounded text-xs; }
+
+/* Checkbox Styles */
+.custom-checkbox {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  @apply w-6 h-6 border-2 rounded cursor-pointer relative transition-all bg-checkbox-bg border-checkbox-border;
+}
+.custom-checkbox:hover { @apply border-checkbox-border-hover; }
+.custom-checkbox:checked { @apply bg-checkbox-checked border-checkbox-checked; }
+.custom-checkbox:focus { @apply ring-2 ring-checkbox-focus ring-offset-0; }
+
+.custom-checkbox-small {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  @apply w-4 h-4 border-2 rounded-sm bg-checkbox-bg border-checkbox-border cursor-pointer transition-all;
+}
+.custom-checkbox-small:hover { @apply border-checkbox-border-hover; }
+.custom-checkbox-small:checked { @apply bg-checkbox-checked border-checkbox-checked; }
+.custom-checkbox-small:focus { @apply ring-2 ring-checkbox-focus ring-offset-0; }
+
+/* --- ANIMATIONS --- */
 .slide-enter-active, .slide-leave-active {
   transition: opacity 100ms ease;
 }
@@ -28,3 +152,13 @@ h1, h2, h3, h4, h5, h6 {
 .rotate-down {
   transform: rotate(90deg);
 }
+
+/* Rarity text color classes (used by getRarityClass) */
+.text-rarity-0 { color: #BEBEBE; }
+.text-rarity-1 { color: #FFFFFF; }
+.text-rarity-2 { color: #00EE8C; }
+.text-rarity-3 { color: #FF913C; }
+.text-rarity-4 { color: #FFDF78; }
+.text-rarity-5 { color: #6A42A2; }
+.text-rarity-6 { color: #8DC6E1; }
+.text-rarity-7 { color: #FF88B8; }

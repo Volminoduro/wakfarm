@@ -1,7 +1,7 @@
 <template>
   <button 
     @click="emit('toggle')"
-    :class="['px-1 py-1 text-sm transition-all rounded', COLOR_CLASSES.buttonToggle]" 
+    class="px-1 py-1 text-sm transition-all rounded text-slate-300 hover:bg-slate-700" 
     :title="isExpanded ? $t('divers.toggle_collapse_all') : $t('divers.toggle_expand_all')">
     <span class="flex items-center gap-2">
       <svg v-if="!isExpanded" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -16,8 +16,6 @@
 </template>
 
 <script setup>
-import { COLOR_CLASSES } from '@/constants/colors'
-
 defineProps({
   isExpanded: {
     type: Boolean,

@@ -10,8 +10,8 @@
           ? '' 
           : 'border-transparent opacity-70 hover:opacity-100'
       ]"
-      :style="currentLanguage === lang.code ? `border-color: ${WAKFU_TEXT}` : ''"
-      @mouseenter="(e) => currentLanguage !== lang.code && (e.target.style.borderColor = WAKFU_TEXT_ALT)"
+      :style="currentLanguage === lang.code ? 'border-color: var(--color-wakfu-text)' : ''"
+      @mouseenter="(e) => currentLanguage !== lang.code && (e.target.style.borderColor = 'var(--color-wakfu-text-alt)')"
       @mouseleave="(e) => currentLanguage !== lang.code && (e.target.style.borderColor = 'transparent')"
       :title="lang.name"
     >
@@ -24,7 +24,6 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { WAKFU_TEXT_ALT, WAKFU_TEXT } from '@/constants/colors'
 
 const { locale } = useI18n()
 

@@ -1,11 +1,11 @@
 <template>
-  <div :class="['min-h-screen flex flex-col', COLOR_CLASSES.bgPrimary]">
+  <div class="min-h-screen flex flex-col bg-slate-900">
 
     <AppHeader />
     
-    <main class="flex-grow">
+    <main class="grow">
       <div v-if="!jsonStore.loaded" class="p-8 text-center">
-        <p :class="['text-lg', COLOR_CLASSES.textLoading]">{{$t('divers.loading')}}</p>
+        <p class="text-lg text-orange-400">{{$t('divers.loading')}}</p>
       </div>
 
       <RentabilityRunView v-if="mainTab === 'rentability'" />
@@ -27,7 +27,6 @@ import { useAppStore } from '@/stores/useAppStore'
 import { useJsonStore } from '@/stores/useJsonStore'
 import { useLocalStorage } from '@/composables/useLocalStorage'
 import { LS_KEYS } from '@/constants/localStorageKeys'
-import { COLOR_CLASSES } from '@/constants/colors'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import RentabilityRunView from '@/views/RentabilityRunView.vue'

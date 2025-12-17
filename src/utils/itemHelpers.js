@@ -1,4 +1,3 @@
-import { RARITY_COLORS } from '@/constants/colors'
 
 /**
  * Get stele information string for an item
@@ -17,10 +16,11 @@ export function getSteleInfo(item) {
 }
 
 /**
- * Get rarity color for an item
- * @param {number} rarity - Rarity level (0-7)
- * @returns {string} Hex color code
+ * Get Tailwind class for rarity color
+ * @param {number} rarity
+ * @returns {string} Tailwind text color class (e.g. 'text-rarity-2')
  */
-export function getRarityColor(rarity) {
-  return RARITY_COLORS[rarity] || RARITY_COLORS[0]
+export function getRarityClass(rarity) {
+  const idx = (typeof rarity === 'number' && rarity >= 0 && rarity <= 7) ? rarity : 0
+  return `text-rarity-${idx}`
 }

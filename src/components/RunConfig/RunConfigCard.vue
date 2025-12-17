@@ -1,5 +1,5 @@
 <template>
-  <div :class="COLOR_CLASSES.card">
+  <div class="cf-card">
     <!-- Header -->
     <div class="px-5 py-4 flex items-center justify-between gap-4">
       <!-- Left: Instance name (clickable to toggle) -->
@@ -10,7 +10,7 @@
         
         <BossIcon :boss-id="props.instance.bossId" />
 
-        <div :class="['font-bold truncate', COLOR_CLASSES.textLight]">
+        <div class="font-bold truncate text-slate-100">
           {{ $t("instances." + props.instance.id) }} ({{ $t('divers.niveau_reduit') }} {{ props.instance.level }})
         </div>
         
@@ -20,7 +20,7 @@
           viewBox="0 0 24 24" 
           fill="none" 
           xmlns="http://www.w3.org/2000/svg"
-          :class="[isExpanded ? 'rotate-down' : '', 'transition-transform', COLOR_CLASSES.textPrimary]">
+          :class="[isExpanded ? 'rotate-down' : '', 'transition-transform', 'text-slate-100']">
           <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" fill="currentColor"/>
         </svg>
       </div>
@@ -50,52 +50,52 @@
     <transition name="slide">
       <div v-if="isExpanded && hasRuns">
         <!-- Header row with labels - Rift -->
-        <div v-if="!instance.isDungeon" :class="['px-4 py-2 border-t border-[#363634] flex items-center gap-2', COLOR_CLASSES.bgSecondary]">
+        <div v-if="!instance.isDungeon" class="px-4 py-2 border-t border-wakfu-gray flex items-center gap-2 bg-secondary">
           <div class="flex items-center gap-2 flex-1">
-            <div :class="['text-xs font-semibold', COLOR_CLASSES.textSecondary]" style="width: 60px; text-align: center;">
+            <div class="text-xs font-semibold text-slate-300 w-15 text-center">
               {{ $t('divers.config_booster') }}
             </div>
-            <div :class="['text-xs font-semibold', COLOR_CLASSES.textSecondary]" style="width: 120px; text-align: center;">
+            <div class="text-xs font-semibold text-slate-300 w-30 text-center">
               {{ $t('divers.config_wave_start') }}
             </div>
-            <div :class="['text-xs font-semibold', COLOR_CLASSES.textSecondary]" style="width: 120px; text-align: center;">
+            <div class="text-xs font-semibold text-slate-300 w-30 text-center">
               {{ $t('divers.config_waves_done') }}
             </div>
-            <!-- Empty spacers to align with dungeon layout (Stasis, Stèles, Stèles Interv.) -->
-            <div style="width: 30px;"></div>
-            <div :class="['text-xs font-semibold', COLOR_CLASSES.textSecondary]" style="width: 60px; text-align: center;">
-              {{ $t('divers.config_time') }} (min)
-            </div>
-          </div>
-          <div style="width: 60px;"></div> <!-- Space for delete button -->
-        </div>
-
-        <!-- Header row with labels - Dungeon -->
-        <div v-else :class="['px-2 py-2 border-t border-[#363634] flex items-center', COLOR_CLASSES.bgSecondary]">
-          <div class="flex items-center gap-2 flex-1">
-            <div :class="['text-xs font-semibold', COLOR_CLASSES.textSecondary]" style="width: 60px; text-align: center;">
-              {{ $t('divers.config_modulated') }}
-            </div>
-            <div :class="['text-xs font-semibold', COLOR_CLASSES.textSecondary]" style="width: 60px; text-align: center;">
-              {{ $t('divers.config_booster') }}
-            </div>
-            <div :class="['text-xs font-semibold', COLOR_CLASSES.textSecondary]" style="width: 60px; text-align: center;">
-              {{ $t('divers.config_stasis') }}
-            </div>
-            <div :class="['text-xs font-semibold', COLOR_CLASSES.textSecondary]" style="width: 60px; text-align: center;">
-              {{ $t('divers.config_steles') }}
-            </div>
-            <div :class="['text-xs font-semibold', COLOR_CLASSES.textSecondary]" style="width: 80px; text-align: center;">
-              {{ $t('divers.config_stele_intervention') }}
-            </div>
-             <div :class="['text-xs font-semibold', COLOR_CLASSES.textSecondary]" style="width: 60px; text-align: center;">
-               {{ $t('divers.config_stele_archi') }}
-             </div>
-            <div :class="['text-xs font-semibold', COLOR_CLASSES.textSecondary]" style="width: 60px; text-align: center;">
+            <!-- Empty spacer -->
+            <div class="w-7.5"></div>
+            <div class="text-xs font-semibold text-slate-300 w-15 text-center">
               {{ $t('divers.config_time') }}
             </div>
           </div>
-          <div style="width: 60px;"></div> <!-- Space for delete button -->
+          <div class="w-15"></div> <!-- Space for delete button -->
+        </div>
+
+        <!-- Header row with labels - Dungeon -->
+        <div v-else class="px-2 py-2 border-t border-wakfu-gray flex items-center bg-secondary">
+          <div class="flex items-center gap-2 flex-1">
+            <div class="text-xs font-semibold text-slate-300 w-15 text-center">
+              {{ $t('divers.config_modulated') }}
+            </div>
+            <div class="text-xs font-semibold text-slate-300 w-15 text-center">
+              {{ $t('divers.config_booster') }}
+            </div>
+            <div class="text-xs font-semibold text-slate-300 w-15 text-center">
+              {{ $t('divers.config_stasis') }}
+            </div>
+            <div class="text-xs font-semibold text-slate-300 w-15 text-center">
+              {{ $t('divers.config_steles') }}
+            </div>
+            <div class="text-xs font-semibold text-slate-300 w-20 text-center">
+              {{ $t('divers.config_stele_intervention') }}
+            </div>
+             <div class="text-xs font-semibold text-slate-300 w-15 text-center">
+               {{ $t('divers.config_stele_archi') }}
+             </div>
+            <div class="text-xs font-semibold text-slate-300 w-15 text-center">
+              {{ $t('divers.config_time') }}
+            </div>
+          </div>
+          <div class="w-15"></div> <!-- Space for delete button -->
         </div>
 
         <!-- Runs rows -->
@@ -112,7 +112,7 @@
     <!-- Empty state when expanded but no runs -->
     <div 
       v-if="isExpanded && !hasRuns" 
-      :class="['px-5 py-4 text-center border-t border-[#363634]', COLOR_CLASSES.bgSecondary, COLOR_CLASSES.textMuted]">
+      class="px-5 py-4 text-center border-t border-wakfu-gray bg-secondary text-slate-400">
       {{ $t('divers.runs_empty') || 'Aucun run configuré. Cliquez sur "+" pour en ajouter un.' }}
     </div>
   </div>
@@ -120,7 +120,6 @@
 
 <script setup>
 import { computed } from 'vue'
-import { COLOR_CLASSES } from '@/constants/colors'
 import RunConfigRow from '@/components/RunConfig/RunConfigRow.vue'
 import BossIcon from '@/components/BossIcon.vue'
 import { useConfigRunStore } from '@/stores/useConfigRunStore'
