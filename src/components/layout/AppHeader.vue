@@ -3,7 +3,7 @@
     <!-- Top Bar: Title and Language Selector -->
     <div class="px-8 py-2 flex justify-between items-center">
       <div class="flex items-center gap-3">
-        <h1 class="text-4xl font-bold cf-title-header" style="text-shadow: 0.125rem 0.125rem 0.25rem rgba(0,0,0,0.5);">KommuFlow</h1>
+        <h1 class="text-4xl font-bold cf-title-header" style="text-shadow: 0.125rem 0.125rem 0.25rem rgba(0,0,0,0.5);">WAKFARM</h1>
         
         <!-- Alerts handled by HeaderAlerts component -->
         <HeaderAlerts />

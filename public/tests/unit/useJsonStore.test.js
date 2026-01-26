@@ -45,7 +45,7 @@ describe('useJsonStore - prices cache & discovery', () => {
       store.servers = [{ id: 'Pandora' }]
 
       const parsedTs = Date.parse('2025-12-10T12:00:00Z')
-      const cacheKey = 'kommuflow_prices_Pandora'
+      const cacheKey = 'wakfarm_prices_Pandora'
       const cached = { filename: 'Pandora_20251210_1200.json', pricesLastUpdate: '10.12.2025 12:00', data: { 1: 100 } }
       localStorage.setItem(cacheKey, JSON.stringify(cached))
 
@@ -76,7 +76,7 @@ describe('useJsonStore - prices cache & discovery', () => {
 
       store.servers = [{ id: 'Pandora' }]
 
-      const cacheKey = 'kommuflow_prices_Pandora'
+      const cacheKey = 'wakfarm_prices_Pandora'
       localStorage.removeItem(cacheKey)
 
       const res = await store.loadPricesWithLatestDate('Pandora')
@@ -90,7 +90,7 @@ describe('useJsonStore - prices cache & discovery', () => {
 
     it('updates cache when remote filename is newer than cached one', async () => {
       // existing cache with older timestamp
-      const cacheKey = 'kommuflow_prices_Pandora'
+      const cacheKey = 'wakfarm_prices_Pandora'
       const cached = { filename: 'Pandora_20251210_0800.json', pricesLastUpdate: '10.12.2025 08:00', data: { 1: 100 } }
       localStorage.setItem(cacheKey, JSON.stringify(cached))
 
@@ -128,7 +128,7 @@ describe('useJsonStore - prices cache & discovery', () => {
 
       store.servers = [{ id: 'Legacy' }]
 
-      const cacheKey = 'kommuflow_prices_Legacy'
+      const cacheKey = 'wakfarm_prices_Legacy'
       const cached = { filename: 'legacy_prices.json', pricesLastUpdate: null, data: { 3: 300 } }
       localStorage.setItem(cacheKey, JSON.stringify(cached))
 
@@ -152,8 +152,8 @@ describe('useJsonStore - prices cache & discovery', () => {
 
       const cacheP = { filename: 'Pandora_20251210_1200.json', pricesLastUpdate: '10.12.2025 12:00', data: { 1: 100 } }
       const cacheO = { filename: 'Other_20251209_0900.json', pricesLastUpdate: '09.12.2025 09:00', data: { 5: 500 } }
-      localStorage.setItem('kommuflow_prices_Pandora', JSON.stringify(cacheP))
-      localStorage.setItem('kommuflow_prices_Other', JSON.stringify(cacheO))
+      localStorage.setItem('wakfarm_prices_Pandora', JSON.stringify(cacheP))
+      localStorage.setItem('wakfarm_prices_Other', JSON.stringify(cacheO))
 
       const resP = await store.loadPricesWithLatestDate('Pandora')
       const resO = await store.loadPricesWithLatestDate('Other')

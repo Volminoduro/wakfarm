@@ -224,7 +224,7 @@ export const useJsonStore = defineStore('data', {
         }
 
         // localStorage key for this server
-        const storageKey = `kommuflow_prices_${server}`
+        const storageKey = `wakfarm_prices_${server}`
         const cachedRaw = (() => {
           try {
             const raw = localStorage.getItem(storageKey)

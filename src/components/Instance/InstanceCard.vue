@@ -119,7 +119,7 @@ const displayInstance = computed(() => {
 })
 
 // Respect global detailed/minimal view toggle
-const detailedView = useLocalStorage(LS_KEYS.DETAILED_VIEW ?? 'kommuflow_detailed_view', false)
+const detailedView = useLocalStorage(LS_KEYS.DETAILED_VIEW ?? 'wakfarm_detailed_view', false)
 
 const displayedItems = computed(() => {
   if (!displayInstance.value?.items) return []
