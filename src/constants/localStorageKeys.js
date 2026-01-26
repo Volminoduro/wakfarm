@@ -15,7 +15,6 @@ export const LS_KEYS = {
     EXPANDED_HOUR_RUNS: 'wakfarm_expanded_hour_runs',
     TIME_PERIOD: 'wakfarm_time_period',
     SETTINGS_FOLDER_PATH: 'settings.folderPath',
-    SETTINGS_DELETE_AFTER_OCR: 'settings.deleteAfterOCR',
     SETTINGS_LAUNCH_ON_STARTUP: 'settings.launchOnStartup',
     SETTINGS_MINIMIZE_TO_TRAY: 'settings.minimizeToTray',
     CONFIG_RUNS: 'wakfarm_configs',

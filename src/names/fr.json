@@ -10250,12 +10250,8 @@
     "config_waves_done": "Vagues effectuées",
     "tab_settings": "Paramètres",
     "settings": {
-        "folderPath": "Chemin du dossier screenshots du jeu",
-        "defaultFolder": "Dossier par défaut",
         "launchOnStartup": "Lancer l'application au démarrage de Windows",
-        "chooseFolder": "Choisir un dossier",
-        "minimizeToTray": "Réduire dans la zone de notification (icônes cachées)",
-        "deleteAfterOCR": "Supprimer la capture d'écran après traitement (OCR)"
+        "minimizeToTray": "Réduire dans la zone de notification (icônes cachées)"
     }
   }
 }

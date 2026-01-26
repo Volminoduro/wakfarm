@@ -10219,12 +10219,8 @@
     "config_waves_done": "Waves completed",
     "tab_settings": "Settings",
     "settings": {
-        "folderPath": "Folder path for game screenshots",
-        "defaultFolder": "Default folder",
         "launchOnStartup": "Launch the application at Windows startup",
-        "chooseFolder": "Choose folder",
-        "minimizeToTray": "Minimize to system tray (hidden icons)",
-        "deleteAfterOCR": "Delete the screenshot after processing (OCR)"
+        "minimizeToTray": "Minimize to system tray (hidden icons)"
     }
   }
 }
