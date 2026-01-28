@@ -65,6 +65,33 @@ input[type="number"] {
 .cf-select { @apply bg-slate-700 text-slate-100 px-3 py-1 rounded focus:border-wakfu-beige focus:ring-1 focus:ring-wakfu-beige outline-none; }
 .cf-select-sm { @apply bg-slate-700 text-slate-100 px-2 py-1 rounded focus:border-wakfu-beige focus:ring-1 focus:ring-wakfu-beige outline-none; }
 
+/* Shared input wrapper & icons for inline adornments (kamas, percent...) */
+.input-wrapper {
+  position: relative;
+  display: inline-block;
+  width: auto;
+}
+
+.kamas-input-padding {
+  padding-right: 2.5rem !important;
+}
+
+.rate-input-padding {
+  padding-right: 2rem !important;
+}
+
+.kamas-icon,
+.rate-icon {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  margin-top: -0.5em;
+  color: #9CA3AF;
+  pointer-events: none;
+  font-weight: 500;
+  line-height: 1;
+}
+
 .cf-card {
   @apply border-2 rounded-lg shadow-lg hover:shadow-xl transition overflow-hidden bg-bg-secondary border-wakfu-gray;
 }
@@ -80,7 +107,7 @@ input[type="number"] {
 .cf-title-header { @apply text-slate-100; }
 
 .cf-panel { @apply bg-bg-secondary border-2 border-wakfu-gray rounded-lg p-3; }
-.cf-panel-lg { @apply bg-bg-secondary border-2 border-wakfu-gray rounded-lg p-4; }
+.cf-panel-lg { @apply bg-bg-secondary border-2 border-wakfu-gray rounded-none p-4; }
 
 .cf-footer { @apply bg-bg-secondary text-slate-400 px-8 py-3 text-xs; }
 

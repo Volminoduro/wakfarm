@@ -126,8 +126,8 @@ input[type=number] {
 
 .input-wrapper {
   position: relative;
-  display: block;
-  width: 100%;
+  display: inline-block;
+  width: auto;
 }
 
 .kamas-input-padding {

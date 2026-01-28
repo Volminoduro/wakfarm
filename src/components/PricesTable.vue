@@ -5,21 +5,18 @@
       <div class="overflow-x-auto">
         <table class="w-full table-fixed">
           <colgroup>
-            <col style="width:45%" />
-            <col style="width:15%" />
-            <col style="width:25%" />
-            <col style="width:15%" />
-          </colgroup>
-          <thead class="font-bold truncate text-slate-100">
-            <tr>
-              <th @click="sortBy('name')" :class="['cf-table-header','cf-table-header--hover']">
-                <div class="flex items-center gap-2">
-                  {{ $t('divers.prices_col_name') }}
-                  <span class="inline-block w-3 text-center">{{ sortColumn === 'name' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
-                </div>
-              </th>
-              <th @click="sortBy('level')" :class="['cf-table-header','cf-table-header--hover']">
-                <div class="flex items-center gap-2">
+            <col style="width:30%" />
+            <col style="width:20%" />
+            <col style="width:30%" />
+            <col style="width:20%" />
+                  <input
+                    type="text"
+                    :value="formatInputNumber(item.price)"
+                    @blur="onPriceUpdate(item.id, $event.target.value)"
+                    :placeholder="'—'"
+                    :title="getPriceLastUpdated(appStore.config.server, item.id) ? `Modifié: ${formatTimestamp(getPriceLastUpdated(appStore.config.server, item.id))}` : 'Pas de prix'"
+                    class="cf-input text-right w-full bg-transparent border-none focus:bg-slate-700 focus:border-slate-500 kamas-input-padding"
+                  />
                   {{ $t('divers.prices_col_level') }}
                   <span class="inline-block w-3 text-center">{{ sortColumn === 'level' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
                 </div>
@@ -56,17 +53,20 @@
                 <span v-else class="text-slate-400">—</span>
               </td>
               <td class="px-4 py-3 text-right text-kamas">
-                <input
-                  type="number"
-                  :value="item.price"
-                  @blur="onPriceUpdate(item.id, $event.target.value)"
-                  :placeholder="'—'"
-                  :title="getPriceLastUpdated(appStore.config.server, item.id) ? `Modifié: ${formatTimestamp(getPriceLastUpdated(appStore.config.server, item.id))}` : 'Pas de prix'"
-                  class="cf-input text-right w-32 bg-transparent border-none focus:bg-slate-700 focus:border-slate-500"
-                  min="0"
-                  max="1000000000"
-                  step="1"
-                />
+                <div class="input-wrapper w-48 mx-auto">
+                  <input
+                    type="number"
+                    :value="item.price"
+                    @blur="onPriceUpdate(item.id, $event.target.value)"
+                    :placeholder="'—'"
+                    :title="getPriceLastUpdated(appStore.config.server, item.id) ? `Modifié: ${formatTimestamp(getPriceLastUpdated(appStore.config.server, item.id))}` : 'Pas de prix'"
+                    class="cf-input text-right w-full bg-transparent border-none focus:bg-slate-700 focus:border-slate-500 kamas-input-padding"
+                    min="0"
+                    max="1000000000"
+                    step="1"
+                  />
+                  <span class="kamas-icon">₭</span>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -256,7 +256,10 @@ const filteredAndSortedItems = computed(() => {
 
 // Event handlers
 function onPriceUpdate(itemId, newPrice) {
-  emit('update-price', { itemId, newPrice, tabType: props.tabType })
+  // newPrice may be formatted (spaces, french decimal comma). Parse to raw number.
+  const cleaned = parseFormattedNumber(newPrice || '').replace(',', '.')
+  const numeric = cleaned === '' ? null : Number(cleaned)
+  emit('update-price', { itemId, newPrice: numeric, tabType: props.tabType })
 }
 
 function onClearAll() {
