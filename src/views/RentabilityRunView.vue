@@ -79,24 +79,30 @@
     </div>
     
     <!-- Kamas / Run -->
-    <div class="px-8 py-6 max-w-480 mx-auto">
+    <div class="px-8 py-6 max-w-480 mx-auto" ref="scrollContainer">
       <div v-if="!jsonStore.loaded" class="text-center">
       </div>
       <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <InstanceCard
-          v-for="inst in sortedInstances"
+          v-for="inst in visibleInstances"
           :key="inst.key"
           :instance="inst"
         />
+      </div>
+      <!-- Loading indicator -->
+      <div v-if="hasMore && jsonStore.loaded" class="text-center py-4">
+        <span class="text-slate-400 text-sm">{{ $t('divers.loading') || 'Chargement...' }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useAppStore } from '@/stores/useAppStore'
 import { useJsonStore } from '@/stores/useJsonStore'
+import { usePersonalPricesStore } from '@/stores/usePersonalPricesStore'
+import { useP2PStore } from '@/stores/useP2PStore'
 import InstanceCard from '@/components/Instance/InstanceCard.vue'
 import ToggleAllButton from '@/components/ToggleAllButton.vue'
 import { useLocalStorage } from '@/composables/useLocalStorage'
@@ -106,9 +112,16 @@ import { calculateInstanceForRunWithPricesAndPassFilters } from '@/utils/instanc
 
 const appStore = useAppStore()
 const jsonStore = useJsonStore()
+const personalPricesStore = usePersonalPricesStore()
+const p2pStore = useP2PStore()
 
 // Gestion de l'expansion pour Kamas/Run (persistée en localStorage)
 const expandedRun = useLocalStorage(LS_KEYS.EXPANDED_RUN, [])
+
+// Infinite scroll state
+const visibleCount = ref(20)
+const ITEMS_PER_PAGE = 20
+const scrollContainer = ref(null)
 
 // Expanded run keys are persisted in `expandedRun` (localStorage)
 
@@ -116,8 +129,15 @@ const expandedRun = useLocalStorage(LS_KEYS.EXPANDED_RUN, [])
 const sortedInstances = computed(() => {
   if (!jsonStore.loaded) return []
 
+  // Créer une dépendance réactive aux prix personnels et P2P
+  const personalPrices = personalPricesStore.prices
+  const p2pPrices = p2pStore.prices
+
+  // Utiliser la map de prix unifiée (personnel > collectif)
+  const unifiedPriceMap = jsonStore.getPriceMapWithPersonal(appStore.config.server)
+  
   const enriched = jsonStore.instancesBase.map(inst => {
-    const result = calculateInstanceForRunWithPricesAndPassFilters(inst.id, appStore.config, jsonStore.priceMap)
+    const result = calculateInstanceForRunWithPricesAndPassFilters(inst.id, appStore.config, unifiedPriceMap)
     return result
   }).filter(inst => inst && inst.isDungeon)
 
@@ -127,6 +147,50 @@ const sortedInstances = computed(() => {
       key: `global_${inst.id}`
     }))
     .sort((a, b) => (b.totalKamas || 0) - (a.totalKamas || 0))
+})
+
+// Visible instances for infinite scroll
+const visibleInstances = computed(() => {
+  return sortedInstances.value.slice(0, visibleCount.value)
+})
+
+const hasMore = computed(() => {
+  return visibleCount.value < sortedInstances.value.length
+})
+
+// Handle scroll for infinite loading
+function handleScroll() {
+  if (!hasMore.value) return
+  
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+  const windowHeight = window.innerHeight
+  const documentHeight = document.documentElement.scrollHeight
+  
+  // Load more when user is 500px from bottom
+  if (scrollTop + windowHeight >= documentHeight - 500) {
+    visibleCount.value = Math.min(
+      visibleCount.value + ITEMS_PER_PAGE,
+      sortedInstances.value.length
+    )
+  }
+}
+
+// Reset visible count when data changes
+watch(() => sortedInstances.value.length, () => {
+  visibleCount.value = ITEMS_PER_PAGE
+})
+
+// Also reset when config changes (like server, modulated, etc.)
+watch(() => appStore.config, () => {
+  visibleCount.value = ITEMS_PER_PAGE
+}, { deep: true })
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
 })
 
 const allRunExpanded = computed(() => {

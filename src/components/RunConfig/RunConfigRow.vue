@@ -1,9 +1,9 @@
 <template>
   <!-- Rift (Brèche) Configuration -->
   <div v-if="run.isRift" class="px-4 py-2 border-t border-wakfu-gray flex items-center bg-secondary">
-    <div class="flex items-center gap-2 flex-1">
+    <div class="flex items-center gap-2 flex-1 flex-wrap">
       <!-- Booster -->
-      <div class="flex justify-center w-15">
+      <div class="flex justify-center w-12">
         <input 
           type="checkbox"
           :checked="run.isBooster"
@@ -13,7 +13,7 @@
       </div>
 
       <!-- Vague de départ -->
-      <div class="flex justify-center w-15">
+      <div class="flex justify-center w-12">
         <input 
           type="number"
           :value="run.startingWave"
@@ -24,7 +24,7 @@
       </div>
 
       <!-- Nombre de vagues effectuées -->
-      <div class="flex justify-center w-15">
+      <div class="flex justify-center w-12">
         <input 
           type="number"
           :value="run.wavesCompleted"
@@ -36,10 +36,10 @@
       </div>
 
       <!-- Empty spacers to align with dungeon layout (Stasis, Stèles, Stèles Interv.) -->
-      <div class="w-7.5"></div>
+      <div class="w-6"></div>
 
       <!-- Temps (minutes) -->
-      <div class="flex justify-center w-15">
+      <div class="flex justify-center w-12">
         <input 
           type="number"
           :value="run.time"
@@ -52,7 +52,7 @@
     </div>
 
     <!-- Bouton supprimer -->
-    <div class="flex justify-center w-15">
+    <div class="flex justify-center w-12">
       <button 
         @click="emit('remove')"
         :class="['px-1 py-1 rounded text-sm transition-colors', 'bg-red-900/50 hover:bg-red-800 text-red-200']"
@@ -64,9 +64,9 @@
 
   <!-- Dungeon Configuration -->
   <div v-else class="px-2 py-3 border-t border-wakfu-gray flex items-center bg-secondary">
-    <div class="flex items-center gap-2 flex-1">
+    <div class="flex items-center gap-2 flex-1 flex-wrap">
       <!-- Modulé -->
-      <div class="flex justify-center w-15">
+      <div class="flex justify-center w-12">
         <input 
           type="checkbox" 
           :checked="run.isModulated"
@@ -76,7 +76,7 @@
       </div>
 
       <!-- Booster -->
-      <div class="flex justify-center w-15">
+      <div class="flex justify-center w-12">
         <input 
           type="checkbox" 
           :checked="run.isBooster"
@@ -86,7 +86,7 @@
       </div>
 
       <!-- Stasis -->
-      <div class="flex justify-center w-15">
+      <div class="flex justify-center w-12">
         <select 
           :value="run.stasis"
           @change="updateField('stasis', parseInt($event.target.value))"
@@ -96,7 +96,7 @@
       </div>
 
       <!-- Stèles -->
-      <div class="flex justify-center w-15">
+      <div class="flex justify-center w-12">
         <select 
           :value="run.steles"
           @change="updateField('steles', parseInt($event.target.value))"
@@ -106,7 +106,7 @@
       </div>
 
       <!-- Stèles Interv. -->
-      <div class="flex justify-center w-20">
+      <div class="flex justify-center w-14">
         <select 
           :value="run.steleIntervention"
           @change="updateField('steleIntervention', parseInt($event.target.value))"
@@ -116,7 +116,7 @@
       </div>
 
        <!-- Stèle Archi -->
-      <div class="flex flex-col items-center justify-center w-15">
+      <div class="flex flex-col items-center justify-center w-12">
         <input
           type="checkbox"
           :checked="run.isSteleArchi"
@@ -126,7 +126,7 @@
       </div>
 
       <!-- Temps (minutes) -->
-      <div class="flex justify-center w-15">
+      <div class="flex justify-center w-12">
         <input 
           type="number"
           :value="run.time"

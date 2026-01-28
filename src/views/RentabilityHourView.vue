@@ -115,8 +115,11 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useAppStore } from '@/stores/useAppStore'
 import { useJsonStore } from '@/stores/useJsonStore'
 import { useConfigRunStore } from '@/stores/useConfigRunStore'
+import { usePersonalPricesStore } from '@/stores/usePersonalPricesStore'
+import { useP2PStore } from '@/stores/useP2PStore'
 import { useLocalStorage } from '@/composables/useLocalStorage'
 import { LS_KEYS } from '@/constants/localStorageKeys'
 // use CSS variables instead of importing color constants
@@ -128,8 +131,11 @@ import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
+const appStore = useAppStore()
 const jsonStore = useJsonStore()
 const configRunStore = useConfigRunStore()
+const personalPricesStore = usePersonalPricesStore()
+const p2pStore = useP2PStore()
 
 // Sub-tab management
 const subTab = useLocalStorage(LS_KEYS.RUNS_SUBTAB, 'time')
@@ -215,12 +221,19 @@ function validateTimePeriod(event) {
 const sortedHourRuns = computed(() => {
   if (!jsonStore.loaded) return []
   
+  // Créer une dépendance réactive aux prix personnels et P2P
+  const personalPrices = personalPricesStore.prices
+  const p2pPrices = p2pStore.prices
+  
+  // Utiliser la map de prix unifiée (personnel > collectif)
+  const unifiedPriceMap = jsonStore.getPriceMapWithPersonal(appStore.config.server)
+  
   const allRuns = []
   
   // Iterate through all configured runs
   Object.entries(configRunStore.configs).forEach(([instanceId, runs]) => {
     runs.forEach(config => {
-      const instanceData = calculateInstanceForRunWithPricesAndPassFilters(parseInt(instanceId), config, jsonStore.priceMap)
+      const instanceData = calculateInstanceForRunWithPricesAndPassFilters(parseInt(instanceId), config, unifiedPriceMap)
       
           if (instanceData && config.time > 0) {
         allRuns.push({

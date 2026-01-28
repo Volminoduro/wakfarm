@@ -48,6 +48,17 @@ h1, h2, h3, h4, h5, h6 {
 .cf-text-normal { @apply text-slate-200; }
 .cf-text-light { @apply text-slate-100; }
 .cf-text-muted { @apply text-slate-400; }
+
+/* Hide number input spinner buttons */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
 .cf-text-kamas { @apply text-kamas; }
 
 .cf-input { @apply bg-slate-700 text-slate-100 focus:border-wakfu-beige focus:ring-1 focus:ring-wakfu-beige outline-none; }

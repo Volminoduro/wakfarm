@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import { useAppStore } from './useAppStore'
 import { watch } from 'vue'
+import { usePriceLogic } from '@/composables/usePriceLogic'
+import { usePersonalPricesStore } from './usePersonalPricesStore'
 
 export const useJsonStore = defineStore('data', {
   state: () => ({
@@ -19,6 +21,8 @@ export const useJsonStore = defineStore('data', {
   }),
   getters: {
     priceMap() {
+      // Cette méthode est deprecated - utiliser getPriceMapWithPersonal() à la place
+      // Garde l'ancienne logique pour compatibilité temporaire
       if (Array.isArray(this._rawPrices)) {
         const map = {}
         this._rawPrices.forEach(p => {
@@ -74,6 +78,38 @@ export const useJsonStore = defineStore('data', {
     }
   },
   actions: {
+    /**
+     * Récupère une map de prix avec priorité : personnel > collectif (P2P)
+     * @param {string} server - Le serveur pour lequel récupérer les prix
+     * @returns {Object} Map { itemId: price }
+     */
+    getPriceMapWithPersonal(server) {
+      const { getPrice } = usePriceLogic()
+      const personalStore = usePersonalPricesStore()
+      
+      // Récupérer tous les items possibles
+      const itemIds = new Set()
+      
+      // Ajouter les items du priceMap standard (collectif)
+      Object.keys(this.priceMap).forEach(id => itemIds.add(id))
+      
+      // Ajouter les items qui ont des prix personnels
+      if (personalStore.prices[server]) {
+        Object.keys(personalStore.prices[server]).forEach(id => itemIds.add(id))
+      }
+      
+      // Créer la map unifiée
+      const unifiedMap = {}
+      itemIds.forEach(itemId => {
+        const { price } = getPrice(server, itemId)
+        if (price !== null) {
+          unifiedMap[itemId] = price
+        }
+      })
+      
+      return unifiedMap
+    },
+
     async loadAllData(server) {
       try {
         const basePath = import.meta.env.BASE_URL
@@ -135,7 +171,12 @@ export const useJsonStore = defineStore('data', {
       })
 
       // Construction optimisée des instances
-      const instancesBase = this.rawInstances.map(inst => {
+      // Ignore instances explicitly marked as inactive (isActive: false)
+      const rawInstancesFiltered = Array.isArray(this.rawInstances)
+        ? this.rawInstances.filter(inst => inst.isActive !== false)
+        : []
+
+      const instancesBase = rawInstancesFiltered.map(inst => {
         const instanceMapping = mappingMap.get(inst.id)
         let baseLoots = []
         if (instanceMapping?.monsters) {

@@ -98,14 +98,130 @@
           <div class="w-15"></div> <!-- Space for delete button -->
         </div>
 
-        <!-- Runs rows -->
-        <RunConfigRow 
-          v-for="run in runs"
-          :key="run.id"
-          :run="run"
-          @update="updateRun"
-          @remove="removeRun(run.id)"
-        />
+        <!-- Runs rows (inlined RunConfigRow) -->
+        <div v-for="run in runs" :key="run.id">
+          <div v-if="run.isRift" class="px-4 py-2 border-t border-wakfu-gray flex items-center bg-secondary">
+            <div class="flex items-center gap-2 flex-1 flex-wrap">
+              <div class="flex justify-center w-12">
+                <input
+                  type="checkbox"
+                  :checked="run.isBooster"
+                  @change="updateRun({ ...run, isBooster: $event.target.checked })"
+                  class="custom-checkbox-small"
+                />
+              </div>
+              <div class="flex justify-center w-12">
+                <input
+                  type="number"
+                  :value="run.startingWave"
+                  @input="updateRun({ ...run, startingWave: Math.max(1, parseInt($event.target.value) || 1) })"
+                  class="cf-input text-sm py-1 text-center w-12"
+                  min="1"
+                />
+              </div>
+              <div class="flex justify-center w-12">
+                <input
+                  type="number"
+                  :value="run.wavesCompleted"
+                  @input="updateRun({ ...run, wavesCompleted: Math.min(99, Math.max(1, parseInt($event.target.value) || 1)) })"
+                  class="cf-input text-sm py-1 text-center w-12"
+                  min="1"
+                  max="99"
+                />
+              </div>
+              <div class="w-6"></div>
+              <div class="flex justify-center w-12">
+                <input
+                  type="number"
+                  :value="run.time"
+                  @input="updateRun({ ...run, time: $event.target.value ? Math.max(1, parseInt($event.target.value)) : null })"
+                  :placeholder="'min'"
+                  class="cf-input text-sm py-1 text-center w-12"
+                  min="1"
+                />
+              </div>
+            </div>
+            <div class="flex justify-center w-12">
+              <button
+                @click="removeRun(run.id)"
+                :class="['px-1 py-1 rounded text-sm transition-colors', 'bg-red-900/50 hover:bg-red-800 text-red-200']"
+                :title="$t('divers.button_remove') || 'Supprimer'">
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <div v-else class="px-2 py-3 border-t border-wakfu-gray flex items-center bg-secondary">
+            <div class="flex items-center gap-2 flex-1 flex-wrap">
+              <div class="flex justify-center w-12">
+                <input
+                  type="checkbox"
+                  :checked="run.isModulated"
+                  @change="updateRun({ ...run, isModulated: $event.target.checked })"
+                  class="custom-checkbox-small"
+                />
+              </div>
+              <div class="flex justify-center w-12">
+                <input
+                  type="checkbox"
+                  :checked="run.isBooster"
+                  @change="updateRun({ ...run, isBooster: $event.target.checked })"
+                  class="custom-checkbox-small"
+                />
+              </div>
+              <div class="flex justify-center w-12">
+                <select
+                  :value="run.stasis"
+                  @change="updateRun({ ...run, stasis: parseInt($event.target.value) })"
+                  class="cf-select-sm text-sm w-12">
+                  <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+                </select>
+              </div>
+              <div class="flex justify-center w-12">
+                <select
+                  :value="run.steles"
+                  @change="updateRun({ ...run, steles: parseInt($event.target.value) })"
+                  class="cf-select-sm text-sm w-12">
+                  <option v-for="n in 5" :key="n - 1" :value="n - 1">{{ n - 1 }}</option>
+                </select>
+              </div>
+              <div class="flex justify-center w-14">
+                <select
+                  :value="run.steleIntervention"
+                  @change="updateRun({ ...run, steleIntervention: parseInt($event.target.value) })"
+                  class="cf-select-sm text-sm w-12">
+                  <option v-for="n in 4" :key="n - 1" :value="n - 1">{{ n - 1 }}</option>
+                </select>
+              </div>
+              <div class="flex flex-col items-center justify-center w-12">
+                <input
+                  type="checkbox"
+                  :checked="run.isSteleArchi"
+                  @change="updateRun({ ...run, isSteleArchi: $event.target.checked })"
+                  class="custom-checkbox-small"
+                />
+              </div>
+              <div class="flex justify-center w-12">
+                <input
+                  type="number"
+                  :value="run.time"
+                  @input="updateRun({ ...run, time: $event.target.value ? Math.max(1, parseInt($event.target.value)) : null })"
+                  :placeholder="$t('divers.config_time_placeholder') || 'min'"
+                  class="cf-input text-sm py-1 text-center w-12"
+                  min="1"
+                />
+              </div>
+            </div>
+            <div class="flex justify-center w-12">
+              <button
+                @click="removeRun(run.id)"
+                :class="['px-1 py-1 rounded text-sm transition-colors', 'bg-red-900/50 hover:bg-red-800 text-red-200']"
+                :title="$t('divers.button_remove') || 'Supprimer'">
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </transition>
 
@@ -120,7 +236,6 @@
 
 <script setup>
 import { computed } from 'vue'
-import RunConfigRow from '@/components/RunConfig/RunConfigRow.vue'
 import BossIcon from '@/components/BossIcon.vue'
 import { useConfigRunStore } from '@/stores/useConfigRunStore'
 
