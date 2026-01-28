@@ -1,13 +1,19 @@
 <template>
   <div class="px-8 py-6 max-w-480 mx-auto">
     <div class="cf-panel">
-      <input
-        id="launchOnStartup"
-        type="checkbox"
-        v-model="launchOnStartup"
-      />
-      <label class="cf-text-normal p-2">{{ $t('divers.settings.launchOnStartup') }}</label>
-      <div class="mt-4 flex items-center gap-2">
+      <div class="flex items-center gap-2 mb-4">
+        <input
+          id="launchOnStartup"
+          type="checkbox"
+          :checked="isAutostartEnabled"
+          @change="toggleAutostart"
+          :disabled="autostartLoading"
+        />
+        <label for="launchOnStartup" class="cf-text-normal">
+          {{ $t('divers.settings.launchOnStartup') }}
+        </label>
+      </div>
+      <div class="flex items-center gap-2">
         <input
           id="minimizeToTray"
           type="checkbox"
@@ -23,12 +29,19 @@
 
 <script setup>
 import { useLocalStorage } from '@/composables/useLocalStorage'
+import { useAutostart } from '@/composables/useAutostart'
+import { useMinimizeToTray } from '@/composables/useMinimizeToTray'
 import { LS_KEYS } from '@/constants/localStorageKeys'
+import { watch, onMounted } from 'vue'
 
-const launchOnStartup = useLocalStorage(LS_KEYS.SETTINGS_LAUNCH_ON_STARTUP, false)
 const minimizeToTray = useLocalStorage(LS_KEYS.SETTINGS_MINIMIZE_TO_TRAY, false)
-// Synchronise l'option minimizeToTray avec le backend Rust
-/* watch(minimizeToTray, (val) => {
-  invoke('set_minimize_to_tray', { value: val });
-}, { immediate: true }); */
+const { isAutostartEnabled, isLoading: autostartLoading, toggleAutostart } = useAutostart()
+const { setupCloseToTray } = useMinimizeToTray()
+
+// Setup close to tray when setting changes
+onMounted(() => {
+  watch(minimizeToTray, (enabled) => {
+    setupCloseToTray(enabled)
+  }, { immediate: true })
+})
 </script>

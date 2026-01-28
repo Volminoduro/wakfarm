@@ -37,9 +37,12 @@ const localStorageMock = (() => {
   }
 })()
 
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock
-})
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'localStorage', {
+    value: localStorageMock,
+    writable: true
+  })
+}
 
 describe('usePriceLogic', () => {
   let personalStore
@@ -293,6 +296,105 @@ describe('usePriceLogic', () => {
       const result = priceLogic.getPrice('pandora', 123)
 
       expect(result.price).toBe(5000)
+    })
+  })
+
+  describe('getPriceLastUpdated', () => {
+    it('should return personal price timestamp when available', () => {
+      const now = Date.now()
+      personalStore.prices = {
+        pandora: {
+          123: { price: 5000, lastUpdated: now }
+        }
+      }
+
+      const result = priceLogic.getPriceLastUpdated('pandora', 123)
+
+      expect(result).toBe(now)
+    })
+
+    it('should return collective price timestamp when personal not available', () => {
+      const now = Date.now()
+      p2pStore.prices = {
+        pandora: {
+          123: { price: 3000, lastUpdated: now }
+        }
+      }
+
+      const result = priceLogic.getPriceLastUpdated('pandora', 123)
+
+      expect(result).toBe(now)
+    })
+
+    it('should prioritize personal timestamp over collective', () => {
+      const personalTime = Date.now()
+      const collectiveTime = Date.now() - 60000
+
+      personalStore.prices = {
+        pandora: {
+          123: { price: 5000, lastUpdated: personalTime }
+        }
+      }
+      p2pStore.prices = {
+        pandora: {
+          123: { price: 3000, lastUpdated: collectiveTime }
+        }
+      }
+
+      const result = priceLogic.getPriceLastUpdated('pandora', 123)
+
+      expect(result).toBe(personalTime)
+    })
+
+    it('should return null when no timestamp exists', () => {
+      const result = priceLogic.getPriceLastUpdated('pandora', 999)
+
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('getCurrentPriceLastUpdated', () => {
+    it('should use appStore.config.server', () => {
+      const now = Date.now()
+      personalStore.prices = {
+        pandora: {
+          123: { price: 5000, lastUpdated: now }
+        }
+      }
+      appStore.config.server = 'pandora'
+
+      const result = priceLogic.getCurrentPriceLastUpdated(123)
+
+      expect(result).toBe(now)
+    })
+  })
+
+  describe('formatTimestamp', () => {
+    it('should format timestamp correctly', () => {
+      const timestamp = new Date('2026-01-28T14:30:00Z').getTime()
+      const result = priceLogic.formatTimestamp(timestamp)
+
+      expect(result).toMatch(/\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}/)
+    })
+
+    it('should handle null timestamp', () => {
+      const result = priceLogic.formatTimestamp(null)
+
+      expect(result).toBe('—')
+    })
+
+    it('should handle undefined timestamp', () => {
+      const result = priceLogic.formatTimestamp(undefined)
+
+      expect(result).toBe('—')
+    })
+
+    it('should pad single digit values', () => {
+      // January 5, 2026 at 09:05 AM
+      const timestamp = new Date(2026, 0, 5, 9, 5, 0).getTime()
+      const result = priceLogic.formatTimestamp(timestamp)
+
+      expect(result).toMatch(/05\.01\.2026 09:05/)
     })
   })
 })

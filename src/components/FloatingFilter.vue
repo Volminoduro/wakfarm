@@ -66,13 +66,6 @@
                       {{ $t("divers." + server.name_key) }}
                     </option>
                   </select>
-                  <div class="text-xs leading-tight w-17.5 text-center cf-text-muted">
-                    <div v-if="jsonStore.pricesLastUpdate">
-                      <div>{{ jsonStore.pricesLastUpdate.split(' ')[0] }}</div>
-                      <div>{{ jsonStore.pricesLastUpdate.split(' ')[1] }}</div>
-                    </div>
-                    <span v-else>{{ $t('divers.prices_no_data') }}</span>
-                  </div>
                 </div>
               </td>
             </tr>

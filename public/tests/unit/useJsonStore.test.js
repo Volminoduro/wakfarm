@@ -1,166 +1,173 @@
 import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 
-// Consolidated tests for useJsonStore: caching, index.json fallback, and directory listing parsing
+// Tests for useJsonStore data loading and price retrieval
+// Note: JSON price loading has been removed. Prices are now managed exclusively through
+// personal (localStorage) and P2P (Gun.js) stores.
 
-const setupLocalStorageMock = () => {
-  const store = {}
-  global.localStorage = {
-    getItem: (k) => (k in store ? store[k] : null),
-    setItem: (k, v) => { store[k] = v },
-    removeItem: (k) => { delete store[k] },
-    _store: store
-  }
-}
-
-describe('useJsonStore - prices cache & discovery', () => {
-  let originalLocalStorage
-
+describe('useJsonStore - data loading and price retrieval', () => {
   beforeEach(() => {
     vi.resetModules()
-    originalLocalStorage = global.localStorage
-    setupLocalStorageMock()
     setActivePinia(createPinia())
   })
 
   afterEach(() => {
-    global.localStorage = originalLocalStorage
     vi.restoreAllMocks()
   })
 
-  describe('price caching behavior', () => {
-    it('reuses cached prices when cached timestamp >= filename timestamp', async () => {
-      const axiosMock = { get: vi.fn((url) => {
-        // Return an index pointing to an older file than the cached one
-        if (url.endsWith('/data/prices/price_index.json')) {
-          return Promise.resolve({ data: { Pandora: ['Pandora_20251209_1200.json'] } })
-        }
-        throw new Error('Should not fetch ' + url)
-      }) }
-      vi.doMock('axios', () => ({ default: axiosMock }))
+  describe('getPriceMapWithPersonal', () => {
+    it('returns empty map when no personal prices exist', async () => {
+      vi.doMock('@/stores/usePersonalPricesStore', () => ({
+        usePersonalPricesStore: () => ({
+          prices: {}
+        })
+      }))
+      vi.doMock('@/stores/useP2PStore', () => ({
+        useP2PStore: () => ({
+          prices: {}
+        })
+      }))
+      vi.doMock('@/composables/usePriceLogic', () => ({
+        usePriceLogic: () => ({
+          getPrice: () => ({ price: null, isPersonal: false })
+        })
+      }))
 
       const { useJsonStore } = await import('@/stores/useJsonStore')
       const store = useJsonStore()
 
-      store.servers = [{ id: 'Pandora' }]
+      const result = store.getPriceMapWithPersonal('Pandora')
 
-      const parsedTs = Date.parse('2025-12-10T12:00:00Z')
-      const cacheKey = 'wakfarm_prices_Pandora'
-      const cached = { filename: 'Pandora_20251210_1200.json', pricesLastUpdate: '10.12.2025 12:00', data: { 1: 100 } }
-      localStorage.setItem(cacheKey, JSON.stringify(cached))
-
-      const res = await store.loadPricesWithLatestDate('Pandora')
-
-      expect(res).toEqual({ 1: 100 })
-      expect(store._rawPrices).toEqual({ 1: 100 })
-      expect(store.pricesLastUpdate).toBe('10.12.2025 12:00')
+      expect(result).toEqual({})
     })
 
-    it('stores fetched prices in cache when no cache exists', async () => {
-      // simulate discovery via an HTML directory listing (no index.json) and then a price file fetch; ensure no pre-existing cache
-      // Simulate price_index.json listing the available files for servers
-      const indexData = { Pandora: ['Pandora_20251211_0800.json'] }
-      const axiosMock = { get: vi.fn((url) => {
-        if (url.endsWith('/data/prices/price_index.json')) {
-          return Promise.resolve({ data: indexData })
+    it('returns unified map with personal prices', async () => {
+      const mockGetPrice = vi.fn((server, itemId) => {
+        if (itemId === '123') {
+          return { price: 1000, isPersonal: true }
         }
-        if (url.includes('Pandora_20251211_0800.json')) {
-          return Promise.resolve({ data: { 2: 200 } })
-        }
-        return Promise.reject(new Error('Unexpected URL ' + url))
-      }) }
-      vi.doMock('axios', () => ({ default: axiosMock }))
+        return { price: null, isPersonal: false }
+      })
+
+      vi.doMock('@/stores/usePersonalPricesStore', () => ({
+        usePersonalPricesStore: () => ({
+          prices: {
+            'Pandora': {
+              '123': { price: 1000, lastUpdated: Date.now() }
+            }
+          }
+        })
+      }))
+      vi.doMock('@/stores/useP2PStore', () => ({
+        useP2PStore: () => ({
+          prices: {}
+        })
+      }))
+      vi.doMock('@/composables/usePriceLogic', () => ({
+        usePriceLogic: () => ({
+          getPrice: mockGetPrice
+        })
+      }))
 
       const { useJsonStore } = await import('@/stores/useJsonStore')
       const store = useJsonStore()
 
-      store.servers = [{ id: 'Pandora' }]
+      const result = store.getPriceMapWithPersonal('Pandora')
 
-      const cacheKey = 'wakfarm_prices_Pandora'
-      localStorage.removeItem(cacheKey)
-
-      const res = await store.loadPricesWithLatestDate('Pandora')
-
-      expect(axiosMock.get).toHaveBeenCalled()
-      expect(res).toEqual({ 2: 200 })
-      const raw = JSON.parse(localStorage.getItem(cacheKey))
-      expect(raw.data).toEqual({ 2: 200 })
-      expect(raw.filename).toBe('Pandora_20251211_0800.json')
+      expect(result).toHaveProperty('123')
+      expect(result['123']).toBe(1000)
     })
 
-    it('updates cache when remote filename is newer than cached one', async () => {
-      // existing cache with older timestamp
-      const cacheKey = 'wakfarm_prices_Pandora'
-      const cached = { filename: 'Pandora_20251210_0800.json', pricesLastUpdate: '10.12.2025 08:00', data: { 1: 100 } }
-      localStorage.setItem(cacheKey, JSON.stringify(cached))
-
-      const indexData = { Pandora: ['Pandora_20251211_0800.json'] }
-      const axiosMock = { get: vi.fn((url) => {
-        if (url.endsWith('/data/prices/price_index.json')) {
-          return Promise.resolve({ data: indexData })
+    it('includes items from personal prices only', async () => {
+      const personalPrices = {
+        'Pandora': {
+          '1': { price: 500, lastUpdated: Date.now() },
+          '2': { price: 1500, lastUpdated: Date.now() }
         }
-        if (url.includes('Pandora_20251211_0800.json')) {
-          return Promise.resolve({ data: { 2: 200 } })
-        }
-        return Promise.reject(new Error('Unexpected URL ' + url))
-      }) }
-      vi.doMock('axios', () => ({ default: axiosMock }))
+      }
 
-      const { useJsonStore } = await import('@/stores/useJsonStore')
-      const store = useJsonStore()
-      store.servers = [{ id: 'Pandora' }]
+      const mockGetPrice = vi.fn((server, itemId) => {
+        const price = personalPrices[server]?.[itemId]?.price
+        return { price: price || null, isPersonal: !!price }
+      })
 
-      const res = await store.loadPricesWithLatestDate('Pandora')
-
-      expect(axiosMock.get).toHaveBeenCalled()
-      expect(res).toEqual({ 2: 200 })
-      const raw = JSON.parse(localStorage.getItem(cacheKey))
-      expect(raw.data).toEqual({ 2: 200 })
-      expect(raw.filename).toBe('Pandora_20251211_0800.json')
-    })
-
-    it('uses cache if filename matches and file has no date info', async () => {
-      const axiosMock = { get: vi.fn(() => { throw new Error('Should not fetch') }) }
-      vi.doMock('axios', () => ({ default: axiosMock }))
-
-      const { useJsonStore } = await import('@/stores/useJsonStore')
-      const store = useJsonStore()
-
-      store.servers = [{ id: 'Legacy' }]
-
-      const cacheKey = 'wakfarm_prices_Legacy'
-      const cached = { filename: 'legacy_prices.json', pricesLastUpdate: null, data: { 3: 300 } }
-      localStorage.setItem(cacheKey, JSON.stringify(cached))
-
-      const res = await store.loadPricesWithLatestDate('Legacy')
-
-      expect(res).toEqual({ 3: 300 })
-      expect(store._rawPrices).toEqual({ 3: 300 })
-    })
-
-    it('keeps separate caches per server and reuses each independently', async () => {
-      const axiosMock = { get: vi.fn(() => { throw new Error('Should not fetch') }) }
-      vi.doMock('axios', () => ({ default: axiosMock }))
+      vi.doMock('@/stores/usePersonalPricesStore', () => ({
+        usePersonalPricesStore: () => ({
+          prices: personalPrices
+        })
+      }))
+      vi.doMock('@/stores/useP2PStore', () => ({
+        useP2PStore: () => ({
+          prices: {}
+        })
+      }))
+      vi.doMock('@/composables/usePriceLogic', () => ({
+        usePriceLogic: () => ({
+          getPrice: mockGetPrice
+        })
+      }))
 
       const { useJsonStore } = await import('@/stores/useJsonStore')
       const store = useJsonStore()
 
-      store.servers = [
-        { id: 'Pandora' },
-        { id: 'Other' }
-      ]
+      const result = store.getPriceMapWithPersonal('Pandora')
 
-      const cacheP = { filename: 'Pandora_20251210_1200.json', pricesLastUpdate: '10.12.2025 12:00', data: { 1: 100 } }
-      const cacheO = { filename: 'Other_20251209_0900.json', pricesLastUpdate: '09.12.2025 09:00', data: { 5: 500 } }
-      localStorage.setItem('wakfarm_prices_Pandora', JSON.stringify(cacheP))
-      localStorage.setItem('wakfarm_prices_Other', JSON.stringify(cacheO))
-
-      const resP = await store.loadPricesWithLatestDate('Pandora')
-      const resO = await store.loadPricesWithLatestDate('Other')
-
-      expect(resP).toEqual({ 1: 100 })
-      expect(resO).toEqual({ 5: 500 })
+      expect(Object.keys(result).length).toBe(2)
+      expect(result['1']).toBe(500)
+      expect(result['2']).toBe(1500)
     })
   })
 
+  describe('pricesLastUpdate cache invalidation', () => {
+    it('pricesLastUpdate is null by default', async () => {
+      vi.doMock('@/stores/usePersonalPricesStore', () => ({
+        usePersonalPricesStore: () => ({
+          prices: {}
+        })
+      }))
+      vi.doMock('@/stores/useP2PStore', () => ({
+        useP2PStore: () => ({
+          prices: {}
+        })
+      }))
+      vi.doMock('@/composables/usePriceLogic', () => ({
+        usePriceLogic: () => ({
+          getPrice: () => ({ price: null, isPersonal: false })
+        })
+      }))
+
+      const { useJsonStore } = await import('@/stores/useJsonStore')
+      const store = useJsonStore()
+      
+      expect(store.pricesLastUpdate).toBeNull()
+    })
+
+    it('can be set to trigger cache invalidation', async () => {
+      vi.doMock('@/stores/usePersonalPricesStore', () => ({
+        usePersonalPricesStore: () => ({
+          prices: {}
+        })
+      }))
+      vi.doMock('@/stores/useP2PStore', () => ({
+        useP2PStore: () => ({
+          prices: {}
+        })
+      }))
+      vi.doMock('@/composables/usePriceLogic', () => ({
+        usePriceLogic: () => ({
+          getPrice: () => ({ price: null, isPersonal: false })
+        })
+      }))
+
+      const { useJsonStore } = await import('@/stores/useJsonStore')
+      const store = useJsonStore()
+
+      expect(store.pricesLastUpdate).toBeNull()
+
+      store.pricesLastUpdate = Date.now()
+
+      expect(store.pricesLastUpdate).not.toBeNull()
+      expect(typeof store.pricesLastUpdate).toBe('number')
+    })
+  })
 })

@@ -63,10 +63,60 @@ export function usePriceLogic() {
     return hasPersonalPrice(appStore.config.server, itemId)
   }
 
+  /**
+   * Récupère le timestamp de dernière modification d'un prix
+   * @param {string} server - Le serveur
+   * @param {number|string} itemId - L'ID de l'item
+   * @returns {number|null} - Timestamp en millisecondes, ou null si pas de prix
+   */
+  function getPriceLastUpdated(server, itemId) {
+    // Vérifier d'abord les prix personnels
+    const personalPriceData = personalStore.prices[server]?.[itemId]
+    if (personalPriceData && personalPriceData.lastUpdated) {
+      return personalPriceData.lastUpdated
+    }
+
+    // Sinon, utiliser le timestamp du prix collectif
+    const collectivePriceData = p2pStore.prices[server]?.[itemId]
+    if (collectivePriceData && collectivePriceData.lastUpdated) {
+      return collectivePriceData.lastUpdated
+    }
+
+    return null
+  }
+
+  /**
+   * Récupère le timestamp de dernière modification pour le serveur actuel
+   * @param {number|string} itemId - L'ID de l'item
+   * @returns {number|null}
+   */
+  function getCurrentPriceLastUpdated(itemId) {
+    return getPriceLastUpdated(appStore.config.server, itemId)
+  }
+
+  /**
+   * Formate un timestamp en string lisible (ex: "28.01.2026 14:30")
+   * @param {number} timestamp - Timestamp en millisecondes
+   * @returns {string}
+   */
+  function formatTimestamp(timestamp) {
+    if (!timestamp) return '—'
+    const date = new Date(timestamp)
+    const day = String(date.getDate()).padStart(2, '0')
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const year = date.getFullYear()
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    return `${day}.${month}.${year} ${hours}:${minutes}`
+  }
+
   return {
     getPrice,
     getCurrentPrice,
     hasPersonalPrice,
-    hasCurrentPersonalPrice
+    hasCurrentPersonalPrice,
+    getPriceLastUpdated,
+    getCurrentPriceLastUpdated,
+    formatTimestamp
   }
 }

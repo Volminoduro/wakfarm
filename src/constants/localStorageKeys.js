@@ -13,6 +13,8 @@ export const LS_KEYS = {
     PRICES_COLLECTIVE_PAGE: 'wakfarm_prices_collective_page',
     PRICES_COLLECTIVE_PER_PAGE: 'wakfarm_prices_collective_perPage',
     PRICES_COLLECTIVE_INSTANCES: 'wakfarm_prices_collective_instances',
+    // Prix collectifs locaux (avant P2P)
+    LOCAL_COLLECTIVE_PRICES: 'wakfarm_local_collective_prices',
     // Prix personnels (local)
     PERSONAL_PRICES: 'wakfarm_personal_prices',
     PRICES_PERSONAL_SEARCH_NAME: 'wakfarm_prices_personal_searchName',

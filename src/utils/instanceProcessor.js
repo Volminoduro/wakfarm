@@ -146,11 +146,18 @@ export function _calculateInstanceForRun(instanceId, runConfig) {
   }
 
   const jsonStore = useJsonStore()
+  
+  // Guard: ensure data is loaded
+  if (!jsonStore.loaded || !jsonStore.rawItems || jsonStore.rawItems.length === 0) {
+    console.warn('⚠️ jsonStore not fully loaded yet, skipping instance calculation')
+    return null
+  }
+  
   const baseInstance = jsonStore.instancesBase.find(i => i.id === instanceId)
   if (!baseInstance) return null
 
-  const itemRarityMap = jsonStore.itemRarityMap
-  const priceMap = jsonStore.priceMap
+  const itemRarityMap = jsonStore.itemRarityMap || {}
+  const priceMap = jsonStore.priceMap || {}
 
   // Filtrer et recalculer les loots selon la config du run
   const allLoots = (baseInstance.loots || []).filter(l => {
@@ -181,7 +188,7 @@ export function _calculateInstanceForRun(instanceId, runConfig) {
 export function calculateInstanceForRunWithPricesAndPassFilters(instanceId, runConfig, priceMap) {
   const calculatedInstance = _calculateInstanceForRun(instanceId, runConfig)
   if (!calculatedInstance) return null
-  const key = _makeCalculatedInstanceWithPricesCacheKey(instanceId, runConfig)
+  const key = _makeCalculatedInstanceWithPricesCacheKey(instanceId, runConfig, priceMap)
   
   let result = null
 
@@ -219,17 +226,38 @@ function _makeCalculatedInstanceCacheKey(instanceId, config) {
   return `${instanceId}|${JSON.stringify(relevant)}`
 }
 
-function _makeCalculatedInstanceWithPricesCacheKey(instanceId, config) {
-  const jsonStore = useJsonStore()
+function _makeCalculatedInstanceWithPricesCacheKey(instanceId, config, priceMap) {
+  const server = useAppStore().config.server || 'default'
+  
+  // Create a hash of the price data for the cache key
+  const priceHash = _hashPriceData(priceMap || {})
+  
   const relevant = {
     formatConfigRun: formatConfigRun(config),
     nbCycles: getNbCyclesForConfig(config),
     booster: !!config.isBooster,
-    // include price version so cache invalidates when prices change
-    priceVersion: jsonStore.pricesLastUpdate || 'none'
+    // Include price hash so cache invalidates when prices change
+    priceHash: priceHash
   }
 
-  return `${instanceId}|${JSON.stringify(relevant)}|${useAppStore().config.server || 'default'}`
+  return `${instanceId}|${JSON.stringify(relevant)}|${server}`
+}
+
+function _hashPriceData(priceMap) {
+  // Create a simple hash of price data for cache key
+  // This ensures cache invalidates when prices change
+  if (!priceMap || Object.keys(priceMap).length === 0) {
+    return 'no-prices'
+  }
+  
+  const priceString = JSON.stringify(priceMap)
+  let hash = 0
+  for (let i = 0; i < priceString.length; i++) {
+    const char = priceString.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash // Convert to 32bit integer
+  }
+  return `prices-${Math.abs(hash).toString(36)}`
 }
 
 
