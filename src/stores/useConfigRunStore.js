@@ -77,7 +77,6 @@ export const useConfigRunStore = defineStore('config', () => {
       newRun.stasis = config.stasis
       newRun.steles = config.steles
       newRun.steleIntervention = config.steleIntervention
-      newRun.isSteleArchi = config.isSteleArchi
     }
 
     if (!configs.value[instanceId]) {

@@ -71,31 +71,28 @@
         </div>
 
         <!-- Header row with labels - Dungeon -->
-        <div v-else class="px-2 py-2 border-t border-wakfu-gray flex items-center bg-secondary">
+        <div v-else class="px-4 py-2 border-t border-wakfu-gray flex items-center gap-2 bg-secondary">
           <div class="flex items-center gap-2 flex-1">
-            <div class="text-xs font-semibold text-slate-300 w-15 text-center">
+            <div class="text-xs font-semibold text-slate-300 w-12 text-center">
               {{ $t('divers.config_modulated') }}
             </div>
-            <div class="text-xs font-semibold text-slate-300 w-15 text-center">
+            <div class="text-xs font-semibold text-slate-300 w-12 text-center">
               {{ $t('divers.config_booster') }}
             </div>
-            <div class="text-xs font-semibold text-slate-300 w-15 text-center">
+            <div class="text-xs font-semibold text-slate-300 w-12 text-center">
               {{ $t('divers.config_stasis') }}
             </div>
-            <div class="text-xs font-semibold text-slate-300 w-15 text-center">
+            <div class="text-xs font-semibold text-slate-300 w-12 text-center">
               {{ $t('divers.config_steles') }}
             </div>
-            <div class="text-xs font-semibold text-slate-300 w-20 text-center">
+            <div class="text-xs font-semibold text-slate-300 w-14 text-center">
               {{ $t('divers.config_stele_intervention') }}
             </div>
-             <div class="text-xs font-semibold text-slate-300 w-15 text-center">
-               {{ $t('divers.config_stele_archi') }}
-             </div>
-            <div class="text-xs font-semibold text-slate-300 w-15 text-center">
+            <div class="text-xs font-semibold text-slate-300 w-12 text-center">
               {{ $t('divers.config_time') }}
             </div>
           </div>
-          <div class="w-15"></div> <!-- Space for delete button -->
+          <div class="w-12"></div> <!-- Space for delete button -->
         </div>
 
         <!-- Runs rows (inlined RunConfigRow) -->
@@ -151,8 +148,8 @@
             </div>
           </div>
 
-          <div v-else class="px-2 py-3 border-t border-wakfu-gray flex items-center bg-secondary">
-            <div class="flex items-center gap-2 flex-1 flex-wrap">
+          <div v-else class="px-4 py-2 border-t border-wakfu-gray flex items-center bg-secondary">
+            <div class="flex items-center gap-2 flex-1">
               <div class="flex justify-center w-12">
                 <input
                   type="checkbox"
@@ -192,14 +189,6 @@
                   class="cf-select-sm text-sm w-12">
                   <option v-for="n in 4" :key="n - 1" :value="n - 1">{{ n - 1 }}</option>
                 </select>
-              </div>
-              <div class="flex flex-col items-center justify-center w-12">
-                <input
-                  type="checkbox"
-                  :checked="run.isSteleArchi"
-                  @change="updateRun({ ...run, isSteleArchi: $event.target.checked })"
-                  class="custom-checkbox-small"
-                />
               </div>
               <div class="flex justify-center w-12">
                 <input

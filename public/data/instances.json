@@ -795,78 +795,91 @@
     "id": 207,
     "level": 12,
     "players": 6,
-    "isDungeon": true
+    "isDungeon": true,
+    "isActive": false
   },
   {
     "id": 208,
     "level": 21,
     "players": 6,
-    "isDungeon": true
+    "isDungeon": true,
+    "isActive": false
   },
   {
     "id": 209,
     "level": 36,
     "players": 6,
-    "isDungeon": true
+    "isDungeon": true,
+    "isActive": false
   },
   {
     "id": 210,
     "level": 51,
     "players": 6,
-    "isDungeon": true
+    "isDungeon": true,
+    "isActive": false
   },
   {
     "id": 211,
     "level": 66,
     "players": 6,
-    "isDungeon": true
+    "isDungeon": true,
+    "isActive": false
   },
   {
     "id": 212,
     "level": 81,
     "players": 6,
-    "isDungeon": true
+    "isDungeon": true,
+    "isActive": false
   },
   {
     "id": 213,
     "level": 96,
     "players": 6,
-    "isDungeon": true
+    "isDungeon": true,
+    "isActive": false
   },
   {
     "id": 214,
     "level": 111,
     "players": 6,
-    "isDungeon": true
+    "isDungeon": true,
+    "isActive": false
   },
   {
     "id": 215,
     "level": 126,
     "players": 6,
-    "isDungeon": true
+    "isDungeon": true,
+    "isActive": false
   },
   {
     "id": 216,
     "level": 141,
     "players": 6,
-    "isDungeon": true
+    "isDungeon": true,
+    "isActive": false
   },
   {
     "id": 217,
     "level": 156,
     "players": 6,
-    "isDungeon": true
+    "isDungeon": true,
+    "isActive": false
   },
   {
     "id": 218,
     "level": 171,
     "players": 6,
-    "isDungeon": true
+    "isDungeon": true,
+    "isActive": false
   },
   {
     "id": 219,
     "level": 186,
     "players": 6,
-    "isDungeon": true
+    "isDungeon": true,
+    "isActive": false
   }
 ]
