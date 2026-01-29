@@ -10261,7 +10261,7 @@
     "tab_settings": "Paramètres",
     "settings": {
         "launchOnStartup": "Lancer l'application au démarrage de Windows",
-        "minimizeToTray": "Réduire dans la zone de notification (icônes cachées)"
+        "minimizeToTray": "Lors de la fermeture (croix), réduire dans la zone de notification (icônes cachées)"
     }
   }
 }

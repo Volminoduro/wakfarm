@@ -10230,7 +10230,7 @@
     "tab_settings": "Configuración",
     "settings": {
         "launchOnStartup": "Iniciar la aplicación al arrancar Windows",
-        "minimizeToTray": "Minimizar a la bandeja del sistema (iconos ocultos)"
+        "minimizeToTray": "Al cerrar (X), minimizar a la bandeja del sistema (iconos ocultos)"
     }
   }
 }

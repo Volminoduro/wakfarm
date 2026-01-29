@@ -10230,7 +10230,7 @@
     "tab_settings": "Settings",
     "settings": {
         "launchOnStartup": "Launch the application at Windows startup",
-        "minimizeToTray": "Minimize to system tray (hidden icons)"
+        "minimizeToTray": "On close (X), minimize to system tray (hidden icons)"
     }
   }
 }
