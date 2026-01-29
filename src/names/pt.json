@@ -10168,6 +10168,8 @@
     "prices_tab_personal": "Preços Pessoais",
     "prices_personal_indicator": "Pessoal",
     "prices_personal_indicator_tooltip": "Este preço é pessoal (local à sua máquina)",
+    "prices_last_updated": "Atualizado",
+    "prices_no_price": "Sem preço",
     "prices_clear_personal": "Limpar todos os preços pessoais",
     "prices_clear_personal_confirm": "Tem certeza de que deseja excluir todos os seus preços pessoais?",
     "level_ranges_title": "Faixas de nível",

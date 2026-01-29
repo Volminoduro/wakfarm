@@ -10197,6 +10197,8 @@
     "prices_col_price": "Price",
     "prices_showing": "Showing",
     "prices_items": "items",
+    "prices_last_updated": "Updated",
+    "prices_no_price": "No price",
     "rarity_common": "Common",
     "rarity_unusual": "Unusual",
     "rarity_rare": "Rare",

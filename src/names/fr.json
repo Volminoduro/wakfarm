@@ -10228,6 +10228,8 @@
     "prices_col_price": "Prix",
     "prices_showing": "Affichage de",
     "prices_items": "items",
+    "prices_last_updated": "Modifié",
+    "prices_no_price": "Pas de prix",
     "rarity_common": "Commun",
     "rarity_unusual": "Inhabituel",
     "rarity_rare": "Rare",
