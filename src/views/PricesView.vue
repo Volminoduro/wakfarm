@@ -510,10 +510,13 @@ const instanceSearchCollective = ref('')
 
 const allInstancesList = computed(() => {
   const instances = jsonStore.rawInstances || []
-  return instances.map(inst => ({
-    id: inst.id,
-    name: getCachedInstanceName(inst.id)
-  })).sort((a, b) => a.name.localeCompare(b.name))
+  return instances
+    .filter(inst => inst.isActive !== false)
+    .map(inst => ({
+      id: inst.id,
+      name: getCachedInstanceName(inst.id)
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name))
 })
 
 const filteredInstancesListPersonal = computed(() => {

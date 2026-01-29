@@ -144,6 +144,7 @@ const subTab = useLocalStorage(LS_KEYS.RUNS_SUBTAB, 'time')
 const sortedInstances = computed(() => {
   const instances = jsonStore.rawInstances || []
   return instances
+    .filter(inst => inst.isActive !== false)
     .map(inst => ({
       id: inst.id,
       level: inst.level,
