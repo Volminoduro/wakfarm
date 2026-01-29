@@ -52,22 +52,22 @@
         <!-- Header row with labels - Rift -->
         <div v-if="!instance.isDungeon" class="px-4 py-2 border-t border-wakfu-gray flex items-center gap-2 bg-secondary">
           <div class="flex items-center gap-2 flex-1">
-            <div class="text-xs font-semibold text-slate-300 w-15 text-center">
+            <div class="text-xs font-semibold text-slate-300 w-12 text-center">
               {{ $t('divers.config_booster') }}
             </div>
-            <div class="text-xs font-semibold text-slate-300 w-30 text-center">
+            <div class="text-xs font-semibold text-slate-300 w-12 text-center">
               {{ $t('divers.config_wave_start') }}
             </div>
-            <div class="text-xs font-semibold text-slate-300 w-30 text-center">
+            <div class="text-xs font-semibold text-slate-300 w-12 text-center">
               {{ $t('divers.config_waves_done') }}
             </div>
             <!-- Empty spacer -->
-            <div class="w-7.5"></div>
-            <div class="text-xs font-semibold text-slate-300 w-15 text-center">
+            <div class="w-6"></div>
+            <div class="text-xs font-semibold text-slate-300 w-12 text-center">
               {{ $t('divers.config_time') }}
             </div>
           </div>
-          <div class="w-15"></div> <!-- Space for delete button -->
+          <div class="w-12"></div> <!-- Space for delete button -->
         </div>
 
         <!-- Header row with labels - Dungeon -->
