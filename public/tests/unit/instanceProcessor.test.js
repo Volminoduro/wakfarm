@@ -323,7 +323,7 @@ describe('_calculateInstanceForRun integration', () => {
 
   it('returns instance with empty items array when base has no loots', async () => {
     vi.resetModules()
-    vi.doMock('@/stores/useJsonStore', () => ({ useJsonStore: () => ({ instancesBase: [{ id: 20, level: 5, loots: [], players: 2 }], itemRarityMap: {}, priceMap: {}, pricesLastUpdate: 'v1' }) }))
+    vi.doMock('@/stores/useJsonStore', () => ({ useJsonStore: () => ({ instancesBase: [{ id: 20, level: 5, loots: [], players: 2 }], itemRarityMap: {}, priceMap: {}, pricesLastUpdate: 'v1', loaded: true, rawItems: [] }) }))
     vi.doMock('@/stores/useAppStore', () => ({ useAppStore: vi.fn(() => ({ config: {} })) }))
 
     const { _calculateInstanceForRun } = await import('@/utils/instanceProcessor')
@@ -344,7 +344,9 @@ describe('_calculateInstanceForRun integration', () => {
           ] }],
           itemRarityMap: { 5: 1 },
           priceMap: { 5: 10 },
-          pricesLastUpdate: 'v2'
+          pricesLastUpdate: 'v2',
+          loaded: true,
+          rawItems: []
         })
       }
     })
@@ -371,7 +373,9 @@ describe('_calculateInstanceForRun integration', () => {
         instancesBase: { find: findSpy },
         itemRarityMap: {},
         priceMap: {},
-        pricesLastUpdate: 'v3'
+        pricesLastUpdate: 'v3',
+        loaded: true,
+        rawItems: []
       })
     }))
     vi.doMock('@/stores/useAppStore', () => ({ useAppStore: vi.fn(() => ({ config: {} })) }))
@@ -393,7 +397,7 @@ describe('calculateInstanceForRunWithPricesAndPassFilters integration', () => {
 
   it('returns null when no base instance exists', async () => {
     vi.resetModules()
-    vi.doMock('@/stores/useJsonStore', () => ({ useJsonStore: () => ({ instancesBase: [], itemRarityMap: {}, priceMap: {}, pricesLastUpdate: 'pv1' }) }))
+    vi.doMock('@/stores/useJsonStore', () => ({ useJsonStore: () => ({ instancesBase: [], itemRarityMap: {}, priceMap: {}, pricesLastUpdate: 'pv1', loaded: true, rawItems: [] }) }))
     vi.doMock('@/stores/useAppStore', () => ({ useAppStore: vi.fn(() => ({ config: {} })) }))
 
     const { calculateInstanceForRunWithPricesAndPassFilters } = await import('@/utils/instanceProcessor')
@@ -412,7 +416,9 @@ describe('calculateInstanceForRunWithPricesAndPassFilters integration', () => {
         ] }],
         itemRarityMap: { 7: 1 },
         priceMap: { 7: 50, 11: 50 },
-        pricesLastUpdate: 'pv2'
+        pricesLastUpdate: 'pv2',
+        loaded: true,
+        rawItems: []
       })
     }))
     vi.doMock('@/stores/useAppStore', () => ({ useAppStore: vi.fn(() => ({ config: { minInstanceTotal: 0, levelRanges: [0], minItemProfit: null, minDropRatePercent: null } })) }))
@@ -436,7 +442,7 @@ describe('calculateInstanceForRunWithPricesAndPassFilters integration', () => {
 
   it('returns null when instance filtered out by _instancePassesFilters', async () => {
     vi.resetModules()
-    vi.doMock('@/stores/useJsonStore', () => ({ useJsonStore: () => ({ instancesBase: [{ id: 70, level: 1, players: 1, loots: [] }], itemRarityMap: {}, priceMap: {}, pricesLastUpdate: 'pv3' }) }))
+    vi.doMock('@/stores/useJsonStore', () => ({ useJsonStore: () => ({ instancesBase: [{ id: 70, level: 1, players: 1, loots: [] }], itemRarityMap: {}, priceMap: {}, pricesLastUpdate: 'pv3', loaded: true, rawItems: [] }) }))
     // Set minInstanceTotal high so it will be filtered out
     vi.doMock('@/stores/useAppStore', () => ({ useAppStore: vi.fn(() => ({ config: { minInstanceTotal: 10000, levelRanges: [0] } })) }))
 
@@ -445,7 +451,7 @@ describe('calculateInstanceForRunWithPricesAndPassFilters integration', () => {
     expect(res).toBeNull()
   })
 
-  it('reuses priced cache on subsequent calls (console.info spy)', async () => {
+  it('reuses priced cache on subsequent calls', async () => {
     vi.resetModules()
     const findSpy = vi.fn(() => ({ id: 80, level: 1, players: 1, loots: [] }))
     vi.doMock('@/stores/useJsonStore', () => ({
@@ -453,7 +459,9 @@ describe('calculateInstanceForRunWithPricesAndPassFilters integration', () => {
         instancesBase: { find: findSpy },
         itemRarityMap: {},
         priceMap: {},
-        pricesLastUpdate: 'pv4'
+        pricesLastUpdate: 'pv4',
+        loaded: true,
+        rawItems: []
       })
     }))
     vi.doMock('@/stores/useAppStore', () => ({ useAppStore: vi.fn(() => ({ config: { server: 'pandora', minInstanceTotal: 0, levelRanges: [0], minItemProfit: null, minDropRatePercent: null } })) }))

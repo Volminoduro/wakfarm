@@ -1,14 +1,14 @@
 import { usePersonalPricesStore } from '@/stores/usePersonalPricesStore'
-import { useP2PStore } from '@/stores/useP2PStore'
+import { useCollectivePricesStore } from '@/stores/useCollectivePricesStore'
 import { useAppStore } from '@/stores/useAppStore'
 
 /**
  * Composable pour gérer la logique unifiée des prix
- * Priorité : Prix personnel > Prix collectif (P2P)
+ * Priorité : Prix personnel > Prix collectif
  */
 export function usePriceLogic() {
   const personalStore = usePersonalPricesStore()
-  const p2pStore = useP2PStore()
+  const collectiveStore = useCollectivePricesStore()
   const appStore = useAppStore()
 
   /**
@@ -28,7 +28,7 @@ export function usePriceLogic() {
     }
 
     // Sinon, utiliser le prix collectif
-    const collectivePrice = p2pStore.prices[server]?.[itemId]?.price || null
+    const collectivePrice = collectiveStore.prices[server]?.[itemId]?.price || null
     return {
       price: collectivePrice,
       isPersonal: false
@@ -77,7 +77,7 @@ export function usePriceLogic() {
     }
 
     // Sinon, utiliser le timestamp du prix collectif
-    const collectivePriceData = p2pStore.prices[server]?.[itemId]
+    const collectivePriceData = collectiveStore.prices[server]?.[itemId]
     if (collectivePriceData && collectivePriceData.lastUpdated) {
       return collectivePriceData.lastUpdated
     }

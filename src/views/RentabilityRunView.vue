@@ -102,7 +102,7 @@ import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useAppStore } from '@/stores/useAppStore'
 import { useJsonStore } from '@/stores/useJsonStore'
 import { usePersonalPricesStore } from '@/stores/usePersonalPricesStore'
-import { useP2PStore } from '@/stores/useP2PStore'
+import { useCollectivePricesStore } from '@/stores/useCollectivePricesStore'
 import InstanceCard from '@/components/Instance/InstanceCard.vue'
 import ToggleAllButton from '@/components/ToggleAllButton.vue'
 import { useLocalStorage } from '@/composables/useLocalStorage'
@@ -113,7 +113,7 @@ import { calculateInstanceForRunWithPricesAndPassFilters } from '@/utils/instanc
 const appStore = useAppStore()
 const jsonStore = useJsonStore()
 const personalPricesStore = usePersonalPricesStore()
-const p2pStore = useP2PStore()
+const collectivePricesStore = useCollectivePricesStore()
 
 // Gestion de l'expansion pour Kamas/Run (persistée en localStorage)
 const expandedRun = useLocalStorage(LS_KEYS.EXPANDED_RUN, [])
@@ -129,9 +129,10 @@ const scrollContainer = ref(null)
 const sortedInstances = computed(() => {
   if (!jsonStore.loaded) return []
 
-  // Créer une dépendance réactive aux prix personnels et P2P
-  const personalPrices = personalPricesStore.prices
-  const p2pPrices = p2pStore.prices
+  // Créer une dépendance réactive aux prix personnels et collectifs et au serveur
+  personalPricesStore.prices
+  collectivePricesStore.prices
+  appStore.config  // Trigger recalculation on any config change (including server)
 
   // Utiliser la map de prix unifiée (personnel > collectif)
   const unifiedPriceMap = jsonStore.getPriceMapWithPersonal(appStore.config.server)

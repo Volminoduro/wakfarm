@@ -20,23 +20,16 @@ export const useAppStore = defineStore('app', () => {
   // Initialize main data on app start
   async function initData(server) {
     try {
-      await Promise.all([
-        jsonStore.loadAllData(server),
-      ])
-      // Ensure persisted config.server is valid; if not, set to DEFAULT_CONFIG.server or first available
-      try {
+      await jsonStore.loadAllData(server)
+      // Servers are now loaded. Validate persisted config.server is in the list
+      if (jsonStore.servers && jsonStore.servers.length > 0) {
         const configured = config.value?.server
-        const valid = jsonStore.servers && jsonStore.servers.find(s => s.id === configured)
+        const valid = jsonStore.servers.find(s => s.id === configured)
         if (!valid) {
-          const defaultFromConfig = DEFAULT_CONFIG && DEFAULT_CONFIG.server
-          const fallback = defaultFromConfig || (jsonStore.servers && jsonStore.servers[0] && jsonStore.servers[0].id)
-          if (fallback) {
-            config.value = { ...config.value, server: fallback }
-          }
+          // Current server not in list - reset to default or first available
+          const fallback = DEFAULT_CONFIG.server || jsonStore.servers[0].id
+          config.value.server = fallback
         }
-      } catch (e) {
-        // Non-fatal: if servers not present or check fails, don't block init
-        console.warn('Could not ensure default server in config', e)
       }
     } catch (e) {
       console.error('Erreur initData', e)

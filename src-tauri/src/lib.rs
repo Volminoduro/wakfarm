@@ -1,7 +1,10 @@
 use tauri::command;
 use tauri::Manager;
+use tauri::State;
 use mac_address::get_mac_address;
 use sha2::{Sha256, Digest};
+use std::sync::atomic::{AtomicBool, Ordering};
+use keyring::Entry;
 
 #[command]
 fn get_machine_id() -> Result<String, String> {
@@ -17,7 +20,37 @@ fn get_machine_id() -> Result<String, String> {
 }
 
 #[command]
+fn get_secure_value(key: String) -> Result<String, String> {
+    let entry = Entry::new("wakfarm", &key)
+        .map_err(|e| format!("Keyring error: {}", e))?;
+    
+    entry.get_password()
+        .map_err(|e| format!("Password not found: {}", e))
+}
+
+#[command]
+fn set_secure_value(key: String, value: String) -> Result<(), String> {
+    let entry = Entry::new("wakfarm", &key)
+        .map_err(|e| format!("Keyring error: {}", e))?;
+    
+    entry.set_password(&value)
+        .map_err(|e| format!("Failed to store: {}", e))
+}
+
+#[command]
+fn delete_secure_value(key: String) -> Result<(), String> {
+    let entry = Entry::new("wakfarm", &key)
+        .map_err(|e| format!("Keyring error: {}", e))?;
+    
+    entry.delete_credential()
+        .map_err(|e| format!("Failed to delete: {}", e))
+}
+
+#[command]
 fn enable_autostart() -> Result<(), String> {
+    if cfg!(debug_assertions) {
+        return Err("Autostart is disabled in dev builds. Use a release build or the installed app.".to_string());
+    }
     #[cfg(target_os = "windows")]
     {
         use std::env;
@@ -63,6 +96,9 @@ fn disable_autostart() -> Result<(), String> {
 
 #[command]
 fn is_autostart_enabled() -> Result<bool, String> {
+    if cfg!(debug_assertions) {
+        return Ok(false);
+    }
     #[cfg(target_os = "windows")]
     {
         use winreg::RegKey;
@@ -105,20 +141,36 @@ fn show_window(app: tauri::AppHandle) -> Result<(), String> {
     }
 }
 
+struct TraySettings {
+    minimize_to_tray: AtomicBool,
+}
+
+#[command]
+fn set_minimize_to_tray_enabled(enabled: bool, state: State<TraySettings>) {
+    state.minimize_to_tray.store(enabled, Ordering::Relaxed);
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     use tauri::menu::{Menu, MenuItem};
     use tauri::tray::{TrayIconBuilder, TrayIconEvent};
 
     tauri::Builder::default()
+        .manage(TraySettings {
+            minimize_to_tray: AtomicBool::new(false),
+        })
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             get_machine_id,
+            get_secure_value,
+            set_secure_value,
+            delete_secure_value,
             enable_autostart,
             disable_autostart,
             is_autostart_enabled,
             hide_window,
-            show_window
+            show_window,
+            set_minimize_to_tray_enabled
         ])
         .setup(|app| {
             if cfg!(debug_assertions) {
@@ -127,6 +179,11 @@ pub fn run() {
                         .level(log::LevelFilter::Info)
                         .build(),
                 )?;
+            }
+
+            // Show window
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
             }
 
             // Create tray icon menu
@@ -165,11 +222,16 @@ pub fn run() {
             // Set up window close handler to minimize to tray
             if let Some(window) = app.get_webview_window("main") {
                 let window_clone = window.clone();
+                let app_handle = app.handle().clone();
                 window.on_window_event(move |event| {
                     if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-                        // Prevent default close and hide window instead
-                        api.prevent_close();
-                        let _ = window_clone.hide();
+                        if let Some(tray_state) = app_handle.try_state::<TraySettings>() {
+                            if tray_state.minimize_to_tray.load(Ordering::Relaxed) {
+                                // Prevent default close and hide window instead
+                                api.prevent_close();
+                                let _ = window_clone.hide();
+                            }
+                        }
                     }
                 });
             }

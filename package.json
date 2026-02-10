@@ -15,7 +15,7 @@
     "@tauri-apps/api": "^2.9.1",
     "@tauri-apps/plugin-dialog": "^2.4.2",
     "axios": "^1.13.2",
-    "gun": "^0.2020.1241",
+    "firebase": "^12.8.0",
     "pinia": "^3.0.4",
     "vue": "^3.5.24",
     "vue-i18n": "^11.2.2",

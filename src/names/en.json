@@ -10165,6 +10165,7 @@
     "footer_title": "WAKFARM - Wakfu Profitability Calculator",
     "footer_steles_update": "Steles updated on",
     "footer_disclaimer": "Unofficial project - Wakfu © Ankama Games",
+    "footer_contact": "Discord Contact",
     "prices_no_data": "No data",
     "prices_tab_collective": "Collective Prices",
     "prices_tab_personal": "Personal Prices",
@@ -10230,6 +10231,9 @@
     "config_wave_start": "Starting wave",
     "config_waves_done": "Waves completed",
     "tab_settings": "Settings",
+    "alert_blacklist_write": "You are blocked from writing. You cannot modify prices. Contact administration for more information.",
+    "alert_blacklist_read": "You are blocked from reading collective prices. You do not have access to data. Contact administration for more information.",
+    "alert_update_price_error": "Error updating price. Please try again.",
     "settings": {
         "launchOnStartup": "Launch the application at Windows startup",
         "minimizeToTray": "On close (X), minimize to system tray (hidden icons)"

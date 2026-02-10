@@ -408,7 +408,7 @@ import { useClickOutside } from '@/composables/useClickOutside'
 import { getRarityClass } from '@/utils/itemHelpers'
 import { getRarityName as getRarityNameUtil } from '@/utils/rarity'
 import { useJsonStore } from '@/stores/useJsonStore'
-import { useP2PStore } from '@/stores/useP2PStore'
+import { useCollectivePricesStore } from '@/stores/useCollectivePricesStore'  // Firebase
 import { usePersonalPricesStore } from '@/stores/usePersonalPricesStore'
 import { useAppStore } from '@/stores/useAppStore'
 import { useI18n } from 'vue-i18n'
@@ -417,7 +417,7 @@ import PricesTable from '@/components/PricesTable.vue'
 const { t } = useI18n()
 
 const jsonStore = useJsonStore()
-const p2pStore = useP2PStore()
+const collectivePricesStore = useCollectivePricesStore()  // Firebase
 const personalPricesStore = usePersonalPricesStore()
 const appStore = useAppStore()
 
@@ -549,6 +549,7 @@ watch(allInstancesList, (newList) => {
 
 const allItemsPersonal = computed(() => {
   const items = jsonStore.rawItems || []
+  appStore.config  // Trigger dependency on config changes
   const currentServer = appStore.config.server
   const priceMap = personalPricesStore.prices[currentServer] || {}
   const itemInstances = jsonStore.itemToInstancesMap
@@ -585,8 +586,9 @@ const autocompleteItemsPersonal = computed(() => {
 
 const allItemsCollective = computed(() => {
   const items = jsonStore.rawItems || []
+  appStore.config  // Trigger dependency on config changes
   const currentServer = appStore.config.server
-  const priceMap = p2pStore.prices[currentServer] || {}
+  const priceMap = collectivePricesStore.prices[currentServer] || {}
   const itemInstances = jsonStore.itemToInstancesMap
   
   return items.map(item => {
@@ -614,6 +616,16 @@ const autocompleteItemsCollective = computed(() => {
     .filter(item => item.name.toLowerCase().includes(search))
     .slice(0, 10)
 })
+
+// Force reactivity on Firebase prices changes - Vue doesn't always detect nested object changes
+watch(
+  () => collectivePricesStore.prices,
+  () => {
+    // Trigger re-computation by accessing allItemsCollective
+    allItemsCollective.value
+  },
+  { deep: true }
+)
 
 // ========================================
 // HANDLERS
@@ -800,10 +812,12 @@ function onSortByCollective(column) {
 
 // Price update handler (unified for both tabs)
 function onUpdatePrice({ itemId, newPrice, tabType }) {
+  const server = appStore.config.server
+  
   if (tabType === 'personal') {
-    personalPricesStore.updatePrice(appStore.config.server, itemId, newPrice)
+    personalPricesStore.updatePrice(server, itemId, newPrice)
   } else {
-    p2pStore.updatePrice(appStore.config.server, itemId, newPrice)
+    collectivePricesStore.updatePrice(server, itemId, newPrice)
   }
 }
 
@@ -816,7 +830,7 @@ function clearAllPersonalPrices() {
 
 function clearAllPrices() {
   if (confirm(t('divers.confirm_clear_all_prices') || 'Are you sure?')) {
-    p2pStore.clearAllPrices()
+    collectivePricesStore.clearAllPrices()
   }
 }
 

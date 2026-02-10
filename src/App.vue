@@ -18,11 +18,16 @@
     </main>
     
     <AppFooter />
+
+    <!-- Toast alerts (temporary notifications) -->
+    <ToastAlerts />
+
   </div>
 </template>
 
 <script setup>
 import { onMounted } from 'vue'
+import { invoke } from '@tauri-apps/api/core'
 import { useAppStore } from '@/stores/useAppStore'
 import { useJsonStore } from '@/stores/useJsonStore'
 import { useLocalStorage } from '@/composables/useLocalStorage'
@@ -33,15 +38,27 @@ import RentabilityRunView from '@/views/RentabilityRunView.vue'
 import RentabilityHourView from '@/views/RentabilityHourView.vue'
 import PricesView from '@/views/PricesView.vue'
 import SettingsView from '@/views/SettingsView.vue'
+import ToastAlerts from '@/components/ToastAlerts.vue'
 
 const appStore = useAppStore()
 const jsonStore = useJsonStore()
 
 // Tab state with localStorage persistence (shared ref)
 const mainTab = useLocalStorage(LS_KEYS.MAIN_TAB, 'rentability')
+const minimizeToTray = useLocalStorage(LS_KEYS.SETTINGS_MINIMIZE_TO_TRAY, false)
 
 // Charger les données au montage
 onMounted(async () => {
+  // Always show window on startup (unless minimize-to-tray enabled)
+  try {
+    await invoke('set_minimize_to_tray_enabled', { enabled: !!minimizeToTray.value })
+    // Show window on every normal startup (not hidden in tray)
+    await invoke('show_window')
+  } catch (error) {
+    console.warn('Unable to show window:', error)
+  }
+
+  // Load app data
   await appStore.initData(appStore.config.server)
 })
 

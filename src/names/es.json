@@ -10163,6 +10163,7 @@
     "footer_title": "WAKFARM - Calculadora de rentabilidad Wakfu",
     "footer_steles_update": "Estelas actualizadas el",
     "footer_disclaimer": "Proyecto no oficial - Wakfu © Ankama Games",
+    "footer_contact": "Contacto Discord",
     "prices_no_data": "Sin datos",
     "prices_tab_collective": "Precios Colectivos",
     "prices_tab_personal": "Precios Personales",
@@ -10230,6 +10231,9 @@
     "config_wave_start": "Ola inicial",
     "config_waves_done": "Olas completadas",
     "tab_settings": "Configuración",
+    "alert_blacklist_write": "Está bloqueado para escribir. No puede modificar precios. Contacte con la administración para más información.",
+    "alert_blacklist_read": "Está bloqueado para la lectura de precios colectivos. No tiene acceso a los datos. Contacte con la administración para más información.",
+    "alert_update_price_error": "Error al actualizar el precio. Por favor, inténtelo de nuevo.",
     "settings": {
         "launchOnStartup": "Iniciar la aplicación al arrancar Windows",
         "minimizeToTray": "Al cerrar (X), minimizar a la bandeja del sistema (iconos ocultos)"

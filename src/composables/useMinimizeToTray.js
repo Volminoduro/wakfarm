@@ -47,7 +47,20 @@ export function useMinimizeToTray() {
       unlistenResize = null
     }
 
-    if (!minimizeToTrayEnabled) return false
+    if (!minimizeToTrayEnabled) {
+      try {
+        await invoke('set_minimize_to_tray_enabled', { enabled: false })
+      } catch (error) {
+        console.warn('Unable to set minimize-to-tray state:', error)
+      }
+      return false
+    }
+
+    try {
+      await invoke('set_minimize_to_tray_enabled', { enabled: true })
+    } catch (error) {
+      console.warn('Unable to set minimize-to-tray state:', error)
+    }
 
     unlistenResize = await window.onResized(async () => {
       try {

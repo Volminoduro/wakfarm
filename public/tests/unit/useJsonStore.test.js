@@ -2,8 +2,9 @@ import { beforeEach, afterEach, describe, it, expect, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 
 // Tests for useJsonStore data loading and price retrieval
-// Note: JSON price loading has been removed. Prices are now managed exclusively through
-// personal (localStorage) and P2P (Gun.js) stores.
+// Note: Prices are now managed through:
+// - Personal prices: localStorage (via usePersonalPricesStore)
+// - Collective prices: Firebase Firestore (via useCollectivePricesStore)
 
 describe('useJsonStore - data loading and price retrieval', () => {
   beforeEach(() => {
@@ -22,8 +23,8 @@ describe('useJsonStore - data loading and price retrieval', () => {
           prices: {}
         })
       }))
-      vi.doMock('@/stores/useP2PStore', () => ({
-        useP2PStore: () => ({
+      vi.doMock('@/stores/useCollectivePricesStore', () => ({
+        useCollectivePricesStore: () => ({
           prices: {}
         })
       }))
@@ -58,8 +59,8 @@ describe('useJsonStore - data loading and price retrieval', () => {
           }
         })
       }))
-      vi.doMock('@/stores/useP2PStore', () => ({
-        useP2PStore: () => ({
+      vi.doMock('@/stores/useCollectivePricesStore', () => ({
+        useCollectivePricesStore: () => ({
           prices: {}
         })
       }))
@@ -96,8 +97,8 @@ describe('useJsonStore - data loading and price retrieval', () => {
           prices: personalPrices
         })
       }))
-      vi.doMock('@/stores/useP2PStore', () => ({
-        useP2PStore: () => ({
+      vi.doMock('@/stores/useCollectivePricesStore', () => ({
+        useCollectivePricesStore: () => ({
           prices: {}
         })
       }))
@@ -125,8 +126,8 @@ describe('useJsonStore - data loading and price retrieval', () => {
           prices: {}
         })
       }))
-      vi.doMock('@/stores/useP2PStore', () => ({
-        useP2PStore: () => ({
+      vi.doMock('@/stores/useCollectivePricesStore', () => ({
+        useCollectivePricesStore: () => ({
           prices: {}
         })
       }))
@@ -148,8 +149,8 @@ describe('useJsonStore - data loading and price retrieval', () => {
           prices: {}
         })
       }))
-      vi.doMock('@/stores/useP2PStore', () => ({
-        useP2PStore: () => ({
+      vi.doMock('@/stores/useCollectivePricesStore', () => ({
+        useCollectivePricesStore: () => ({
           prices: {}
         })
       }))

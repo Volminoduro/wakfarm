@@ -141,19 +141,18 @@ export function _processLoots(loots, config, itemRarityMap = {}, nbPlayers = 1, 
 export function _calculateInstanceForRun(instanceId, runConfig) {
   const key = _makeCalculatedInstanceCacheKey(instanceId, runConfig)
   if (calculatedInstanceCache.has(key)) {
-    console.info('Using cached instance for key', key)
     return calculatedInstanceCache.get(key)
   }
 
   const jsonStore = useJsonStore()
   
-  // Guard: ensure data is loaded
-  if (!jsonStore.loaded || !jsonStore.rawItems || jsonStore.rawItems.length === 0) {
-    console.warn('⚠️ jsonStore not fully loaded yet, skipping instance calculation')
+  // Guard: ensure we have at least the necessary data (instancesBase can be array or undefined in edge cases)
+  if (!jsonStore.instancesBase) {
+    console.warn('⚠️ jsonStore.instancesBase not available, skipping instance calculation')
     return null
   }
   
-  const baseInstance = jsonStore.instancesBase.find(i => i.id === instanceId)
+  const baseInstance = jsonStore.instancesBase.find ? jsonStore.instancesBase.find(i => i.id === instanceId) : null
   if (!baseInstance) return null
 
   const itemRarityMap = jsonStore.itemRarityMap || {}
@@ -193,7 +192,6 @@ export function calculateInstanceForRunWithPricesAndPassFilters(instanceId, runC
   let result = null
 
   if (calculatedInstanceWithPriceCache.has(key)) {
-    console.info('Using cached instance with prices for key', key)
     result = calculatedInstanceWithPriceCache.get(key)
   } else {
     const itemsWithPrices = (calculatedInstance.items || []).map(it => {

@@ -2,25 +2,21 @@ import { beforeEach, describe, it, expect, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { usePriceLogic } from '@/composables/usePriceLogic'
 import { usePersonalPricesStore } from '@/stores/usePersonalPricesStore'
-import { useP2PStore } from '@/stores/useP2PStore'
+import { useCollectivePricesStore } from '@/stores/useCollectivePricesStore'
 import { useAppStore } from '@/stores/useAppStore'
 
-// Mock Gun.js
-vi.mock('gun', () => ({
-  default: vi.fn(() => ({
-    get: vi.fn(() => ({
-      get: vi.fn(() => ({
-        put: vi.fn()
-      })),
-      on: vi.fn(),
-      set: vi.fn()
-    }))
-  }))
+// Mock Firebase
+vi.mock('firebase/app', () => ({
+  initializeApp: vi.fn()
 }))
-
-// Mock Tauri
-vi.mock('@tauri-apps/api/core', () => ({
-  invoke: vi.fn()
+vi.mock('firebase/firestore', () => ({
+  getFirestore: vi.fn(),
+  collection: vi.fn(),
+  doc: vi.fn()
+}))
+vi.mock('firebase/auth', () => ({
+  getAuth: vi.fn(),
+  signInAnonymously: vi.fn()
 }))
 
 // Mock localStorage
@@ -46,7 +42,7 @@ if (typeof window !== 'undefined') {
 
 describe('usePriceLogic', () => {
   let personalStore
-  let p2pStore
+  let collectivePricesStore
   let appStore
   let priceLogic
 
@@ -56,7 +52,7 @@ describe('usePriceLogic', () => {
     setActivePinia(createPinia())
     
     personalStore = usePersonalPricesStore()
-    p2pStore = useP2PStore()
+    collectivePricesStore = useCollectivePricesStore()
     appStore = useAppStore()
     priceLogic = usePriceLogic()
 
@@ -71,7 +67,7 @@ describe('usePriceLogic', () => {
           123: { price: 5000, lastUpdated: Date.now() }
         }
       }
-      p2pStore.prices = {
+      collectivePricesStore.prices = {
         pandora: {
           123: { price: 3000 }
         }
@@ -86,7 +82,7 @@ describe('usePriceLogic', () => {
     })
 
     it('should return collective price when personal is not available', () => {
-      p2pStore.prices = {
+      collectivePricesStore.prices = {
         pandora: {
           123: { price: 3000 }
         }
@@ -115,7 +111,7 @@ describe('usePriceLogic', () => {
           123: { price: 10000, lastUpdated: Date.now() }
         }
       }
-      p2pStore.prices = {
+      collectivePricesStore.prices = {
         pandora: {
           123: { price: 1000 }
         }
@@ -133,7 +129,7 @@ describe('usePriceLogic', () => {
           123: { price: 5000, lastUpdated: Date.now() }
         }
       }
-      p2pStore.prices = {
+      collectivePricesStore.prices = {
         rubilax: {
           123: { price: 3000 }
         }
@@ -182,7 +178,7 @@ describe('usePriceLogic', () => {
 
     it('should return collective price for current server when no personal price', () => {
       appStore.config.server = 'pandora'
-      p2pStore.prices = {
+      collectivePricesStore.prices = {
         pandora: {
           123: { price: 3000 }
         }
@@ -213,7 +209,7 @@ describe('usePriceLogic', () => {
     })
 
     it('should not be affected by collective prices', () => {
-      p2pStore.prices = {
+      collectivePricesStore.prices = {
         pandora: {
           123: { price: 3000 }
         }
@@ -315,7 +311,7 @@ describe('usePriceLogic', () => {
 
     it('should return collective price timestamp when personal not available', () => {
       const now = Date.now()
-      p2pStore.prices = {
+      collectivePricesStore.prices = {
         pandora: {
           123: { price: 3000, lastUpdated: now }
         }
@@ -335,7 +331,7 @@ describe('usePriceLogic', () => {
           123: { price: 5000, lastUpdated: personalTime }
         }
       }
-      p2pStore.prices = {
+      collectivePricesStore.prices = {
         pandora: {
           123: { price: 3000, lastUpdated: collectiveTime }
         }

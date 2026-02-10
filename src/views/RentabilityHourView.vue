@@ -119,7 +119,7 @@ import { useAppStore } from '@/stores/useAppStore'
 import { useJsonStore } from '@/stores/useJsonStore'
 import { useConfigRunStore } from '@/stores/useConfigRunStore'
 import { usePersonalPricesStore } from '@/stores/usePersonalPricesStore'
-import { useP2PStore } from '@/stores/useP2PStore'
+import { useCollectivePricesStore } from '@/stores/useCollectivePricesStore'
 import { useLocalStorage } from '@/composables/useLocalStorage'
 import { LS_KEYS } from '@/constants/localStorageKeys'
 // use CSS variables instead of importing color constants
@@ -135,7 +135,7 @@ const appStore = useAppStore()
 const jsonStore = useJsonStore()
 const configRunStore = useConfigRunStore()
 const personalPricesStore = usePersonalPricesStore()
-const p2pStore = useP2PStore()
+const collectivePricesStore = useCollectivePricesStore()
 
 // Sub-tab management
 const subTab = useLocalStorage(LS_KEYS.RUNS_SUBTAB, 'time')
@@ -222,9 +222,10 @@ function validateTimePeriod(event) {
 const sortedHourRuns = computed(() => {
   if (!jsonStore.loaded) return []
   
-  // Créer une dépendance réactive aux prix personnels et P2P
-  const personalPrices = personalPricesStore.prices
-  const p2pPrices = p2pStore.prices
+  // Créer une dépendance réactive aux prix personnels et collectifs et au serveur
+  personalPricesStore.prices
+  collectivePricesStore.prices
+  appStore.config  // Trigger recalculation on any config change (including server)
   
   // Utiliser la map de prix unifiée (personnel > collectif)
   const unifiedPriceMap = jsonStore.getPriceMapWithPersonal(appStore.config.server)

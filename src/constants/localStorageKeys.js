@@ -2,8 +2,9 @@
 export const LS_KEYS = {
     MAIN_TAB: 'wakfarm_mainTab',
     EXPANDED_RUN: 'wakfarm_expanded_run',
-    // Prix collectifs (P2P)
-    PRICES_COLLECTIVE_TAB: 'wakfarm_prices_collective_tab',
+    // Prix (onglets personnel/collectif)
+    PRICES_ACTIVE_TAB: 'wakfarm_prices_active_tab',
+    // Prix collectifs
     PRICES_COLLECTIVE_SEARCH_NAME: 'wakfarm_prices_collective_searchName',
     PRICES_COLLECTIVE_RARITIES: 'wakfarm_prices_collective_rarities',
     PRICES_COLLECTIVE_LEVEL_MIN: 'wakfarm_prices_collective_levelMin',
@@ -13,8 +14,6 @@ export const LS_KEYS = {
     PRICES_COLLECTIVE_PAGE: 'wakfarm_prices_collective_page',
     PRICES_COLLECTIVE_PER_PAGE: 'wakfarm_prices_collective_perPage',
     PRICES_COLLECTIVE_INSTANCES: 'wakfarm_prices_collective_instances',
-    // Prix collectifs locaux (avant P2P)
-    LOCAL_COLLECTIVE_PRICES: 'wakfarm_local_collective_prices',
     // Prix personnels (local)
     PERSONAL_PRICES: 'wakfarm_personal_prices',
     PRICES_PERSONAL_SEARCH_NAME: 'wakfarm_prices_personal_searchName',

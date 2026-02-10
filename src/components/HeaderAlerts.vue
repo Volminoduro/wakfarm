@@ -26,18 +26,25 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useAlertsStore } from '@/stores/useAlertsStore'
 
+const { t } = useI18n()
+const alertsStore = useAlertsStore()
+
+// Only show persistent alerts (duration = 0) in header dropdown
 const warnings = computed(() => {
-  const list = []
-  // Provide a single place to add alerts/warnings.
-  // Example placeholders (commented):
-  // list.push({ type: 'warning', message: nameStore.names?.divers?.some_warning_key || 'Avertissement exemple' })
-  // list.push({ type: 'danger', message: nameStore.names?.divers?.some_danger_key || 'Danger exemple' })
-  return list
+  return alertsStore.alerts
+    .filter(alert => !alert.isTemporary)
+    .map(alert => ({
+      type: alert.type,
+      message: t(`divers.${alert.messageKey}`, alert.params)
+    }))
 })
 
 const alertLevel = computed(() => {
   if (warnings.value.length === 0) return null
-  return warnings.value.some(w => w.type === 'danger') ? 'danger' : 'warning'
+  const persistentAlerts = alertsStore.alerts.filter(a => !a.isTemporary)
+  return persistentAlerts.some(a => a.type === 'danger') ? 'danger' : 'warning'
 })
 </script>

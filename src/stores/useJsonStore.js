@@ -2,9 +2,8 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import { useAppStore } from './useAppStore'
 import { watch } from 'vue'
-import { usePriceLogic } from '@/composables/usePriceLogic'
 import { usePersonalPricesStore } from './usePersonalPricesStore'
-import { useLocalCollectivePricesStore } from './useLocalCollectivePricesStore'
+import { useCollectivePricesStore } from './useCollectivePricesStore'
 
 export const useJsonStore = defineStore('data', {
   state: () => ({
@@ -66,13 +65,13 @@ export const useJsonStore = defineStore('data', {
   },
   actions: {
     /**
-     * Récupère une map de prix avec priorité : personnel > collectif (P2P)
+    * Récupère une map de prix avec priorité : personnel > collectif
      * @param {string} server - Le serveur pour lequel récupérer les prix
      * @returns {Object} Map { itemId: price }
      */
     getPriceMapWithPersonal(server) {
       const personalStore = usePersonalPricesStore()
-      const collectiveStore = useLocalCollectivePricesStore()
+      const collectiveStore = useCollectivePricesStore()
       
       // Gather all items that have prices
       const itemIds = new Set()
@@ -82,7 +81,7 @@ export const useJsonStore = defineStore('data', {
         Object.keys(personalStore.prices[server]).forEach(id => itemIds.add(id))
       }
       
-      // Add items with local collective prices (fallback)
+      // Add items with collective prices (fallback)
       if (collectiveStore.prices[server]) {
         Object.keys(collectiveStore.prices[server]).forEach(id => itemIds.add(id))
       }
@@ -90,11 +89,11 @@ export const useJsonStore = defineStore('data', {
       // Create unified map (personal > collective)
       const unifiedMap = {}
       itemIds.forEach(itemId => {
-        // Try personal price first
+        // Try personal price first (highest priority)
         if (personalStore.prices[server] && personalStore.prices[server][itemId]) {
           unifiedMap[itemId] = personalStore.prices[server][itemId].price
         }
-        // Fall back to collective price
+        // Fall back to collective price (lowest priority)
         else if (collectiveStore.prices[server] && collectiveStore.prices[server][itemId]) {
           unifiedMap[itemId] = collectiveStore.prices[server][itemId].price
         }
@@ -107,8 +106,7 @@ export const useJsonStore = defineStore('data', {
       try {
         const basePath = import.meta.env.BASE_URL
         
-        // **PHASE 1: Load critical data first (items + instances)**
-        console.log('📦 Phase 1: Loading items and instances...')
+        // Load critical data first (items + instances)
         const [itemRes, instRes] = await Promise.all([
           axios.get(`${basePath}data/items.json`),
           axios.get(`${basePath}data/instances.json`)
@@ -116,16 +114,15 @@ export const useJsonStore = defineStore('data', {
         
         this.rawItems = itemRes.data
         this.rawInstances = instRes.data
-        console.log('✅ Items and instances loaded')
         
-        // **PHASE 2: Load remaining data in background (non-blocking)**
-        console.log('📦 Phase 2: Loading mapping, loots, servers, boss-mapping (background)...')
-        Promise.all([
-          axios.get(`${basePath}data/mapping.json`),
-          axios.get(`${basePath}data/loots.json`),
-          axios.get(`${basePath}data/servers.json`),
-          axios.get(`${basePath}data/boss-mapping.json`)
-        ]).then(([mappingRes, lootRes, serversRes, bossMappingRes]) => {
+        // Load remaining data in background (Phase 2)
+        try {
+          const [mappingRes, lootRes, serversRes, bossMappingRes] = await Promise.all([
+            axios.get(`${basePath}data/mapping.json`),
+            axios.get(`${basePath}data/loots.json`),
+            axios.get(`${basePath}data/servers.json`),
+            axios.get(`${basePath}data/boss-mapping.json`)
+          ])
           this.servers = serversRes.data || []
           this._rawMapping = mappingRes.data
           this._rawLoots = lootRes.data
@@ -137,10 +134,9 @@ export const useJsonStore = defineStore('data', {
           }))
           
           this._initiateInstancesBase()
-          console.log('✅ Phase 2 completed: mapping, loots, servers, boss-mapping loaded')
-        }).catch(e => {
-          console.error('⚠️ Error loading Phase 2 data (non-critical):', e)
-        })
+        } catch (e) {
+          console.error('⚠️ Error loading Phase 2 data:', e)
+        }
         
         // **Setup watcher for server changes**
         const appStore = useAppStore()
@@ -149,18 +145,15 @@ export const useJsonStore = defineStore('data', {
           watch(
             () => appStore.config.server,
             async (newServer, oldServer) => {
-              if (newServer !== oldServer) {
-                console.log(`📍 Server changed from ${oldServer} to ${newServer}`)
-              }
+              // Server changed - reactive computed will update
             }
           )
         }
         
         // Mark as loaded after Phase 1
         this.loaded = true
-        console.log('✨ Store ready for UI (Phase 1 complete)')
       } catch (e) {
-        console.error("❌ Erreur chargement données Phase 1", e)
+        console.error("❌ Error loading data:", e)
       }
     },
 

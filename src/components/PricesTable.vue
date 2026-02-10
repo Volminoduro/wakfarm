@@ -60,7 +60,7 @@
                   <input
                     type="number"
                     :value="item.price"
-                    @blur="onPriceUpdate(item.id, $event.target.value)"
+                    @blur="onPriceBlur(item.id, $event)"
                     :placeholder="'—'"
                     :title="getPriceUpdateTooltip(item.id)"
                     class="cf-input text-right w-full bg-transparent border-none focus:bg-slate-700 focus:border-slate-500 kamas-input-padding"
@@ -270,11 +270,24 @@ const filteredAndSortedItems = computed(() => {
 })
 
 // Event handlers
-function onPriceUpdate(itemId, newPrice) {
+function onPriceBlur(itemId, event) {
+  const newPrice = event.target.value
+  
   // newPrice may be formatted (spaces, french decimal comma). Parse to raw number.
   const cleaned = parseFormattedNumber(newPrice || '').replace(',', '.')
   const numeric = cleaned === '' ? null : Number(cleaned)
-  emit('update-price', { itemId, newPrice: numeric, tabType: props.tabType })
+  
+  // Get the current price from item to compare (search in all items, not just paginated)
+  const item = props.allItems.find(i => i.id === itemId)
+  const currentPrice = item?.price || null
+  
+  // Only emit if price has actually changed
+  if (numeric !== currentPrice) {
+    emit('update-price', { itemId, newPrice: numeric, tabType: props.tabType })
+  }
+  
+  // Clear the input field (reset to show current value)
+  event.target.value = currentPrice || ''
 }
 
 function onClearAll() {

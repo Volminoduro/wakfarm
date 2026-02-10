@@ -38,7 +38,7 @@ export function useLocalStorage(key, defaultValue, options = {}) {
         console.error(`Erreur sauvegarde localStorage [${key}]:`, error)
       }
     },
-    { deep }
+    { deep, immediate: false }
   )
 
   // Écoute les changements provenant d'autres onglets/fenêtres
