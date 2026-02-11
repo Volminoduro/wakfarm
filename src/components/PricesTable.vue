@@ -61,6 +61,7 @@
                     type="number"
                     :value="item.price"
                     @blur="onPriceBlur(item.id, $event)"
+                    @keydown.enter.prevent="onPriceEnter(item.id, $event)"
                     :placeholder="'—'"
                     :title="getPriceUpdateTooltip(item.id)"
                     class="cf-input text-right w-full bg-transparent border-none focus:bg-slate-700 focus:border-slate-500 kamas-input-padding"
@@ -269,25 +270,48 @@ const filteredAndSortedItems = computed(() => {
   return result
 })
 
-// Event handlers
-function onPriceBlur(itemId, event) {
-  const newPrice = event.target.value
-  
-  // newPrice may be formatted (spaces, french decimal comma). Parse to raw number.
-  const cleaned = parseFormattedNumber(newPrice || '').replace(',', '.')
-  const numeric = cleaned === '' ? null : Number(cleaned)
-  
+const lastSubmittedByItem = new Map()
+
+function parseInputValue(rawValue) {
+  const cleaned = parseFormattedNumber(rawValue || '').replace(',', '.')
+  if (cleaned === '') return null
+  const numeric = Number(cleaned)
+  return Number.isNaN(numeric) ? null : numeric
+}
+
+function commitPrice(itemId, event, source) {
+  const numeric = parseInputValue(event.target.value)
+
   // Get the current price from item to compare (search in all items, not just paginated)
   const item = props.allItems.find(i => i.id === itemId)
-  const currentPrice = item?.price || null
-  
-  // Only emit if price has actually changed
+  const currentPrice = item?.price ?? null
+
+  if (lastSubmittedByItem.has(itemId)) {
+    const lastSubmitted = lastSubmittedByItem.get(itemId)
+    if (numeric === lastSubmitted) {
+    if (source === 'blur') {
+      event.target.value = currentPrice || ''
+    }
+    return
+    }
+  }
+
   if (numeric !== currentPrice) {
     emit('update-price', { itemId, newPrice: numeric, tabType: props.tabType })
+    lastSubmittedByItem.set(itemId, numeric)
   }
-  
-  // Clear the input field (reset to show current value)
-  event.target.value = currentPrice || ''
+
+  if (source === 'blur') {
+    event.target.value = currentPrice || ''
+  }
+}
+
+function onPriceEnter(itemId, event) {
+  commitPrice(itemId, event, 'enter')
+}
+
+function onPriceBlur(itemId, event) {
+  commitPrice(itemId, event, 'blur')
 }
 
 function onClearAll() {
