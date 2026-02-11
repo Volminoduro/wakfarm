@@ -97,28 +97,35 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build app
+      - name: Build app (Windows)
+        if: runner.os == 'Windows'
+        run: npm run tauri build -- --no-bundle
+
+      - name: Build app (macOS)
+        if: runner.os == 'macOS'
+        run: npm run tauri build
+
+      - name: Build app (Linux)
+        if: runner.os == 'Linux'
         run: npm run tauri build
 
       - name: Upload Windows artifacts
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
         with:
-          name: wakfarm-windows
-          path: src-tauri/target/release/bundle/msi/**
+          name: wakfarm-windows-exe
+          path: src-tauri/target/release/*.exe
 
       - name: Upload macOS artifacts
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v4
         with:
           name: wakfarm-macos
-          path: src-tauri/target/release/bundle/dmg/**
+          path: src-tauri/target/release/bundle/macos/**
 
       - name: Upload Linux artifacts
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
           name: wakfarm-linux
-          path: |
-            src-tauri/target/release/bundle/appimage/**
-            src-tauri/target/release/bundle/deb/**
+          path: src-tauri/target/release/bundle/appimage/**
