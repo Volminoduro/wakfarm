@@ -125,30 +125,50 @@ const scrollContainer = ref(null)
 
 // Expanded run keys are persisted in `expandedRun` (localStorage)
 
-// Calculer et trier les instances dynamiquement (sur demande via instancesBase)
-const sortedInstances = computed(() => {
-  if (!jsonStore.loaded) return []
+const sortedInstances = ref([])
+let buildToken = 0
+const CHUNK_SIZE = 40
+
+async function rebuildSortedInstancesChunked() {
+  const token = ++buildToken
+  if (!jsonStore.loaded) {
+    sortedInstances.value = []
+    return
+  }
+
 
   // Créer une dépendance réactive aux prix personnels et collectifs et au serveur
   personalPricesStore.prices
   collectivePricesStore.prices
   appStore.config  // Trigger recalculation on any config change (including server)
+  jsonStore.pricesLastUpdate
 
-  // Utiliser la map de prix unifiée (personnel > collectif)
   const unifiedPriceMap = jsonStore.getPriceMapWithPersonal(appStore.config.server)
-  
-  const enriched = jsonStore.instancesBase.map(inst => {
-    const result = calculateInstanceForRunWithPricesAndPassFilters(inst.id, appStore.config, unifiedPriceMap)
-    return result
-  }).filter(inst => inst && inst.isDungeon)
+  const base = Array.isArray(jsonStore.instancesBase) ? jsonStore.instancesBase : []
+  const results = []
 
-  return (enriched || [])
-    .map(inst => ({
-      ...inst,
-      key: `global_${inst.id}`
-    }))
-    .sort((a, b) => (b.totalKamas || 0) - (a.totalKamas || 0))
-})
+  for (let i = 0; i < base.length; i += CHUNK_SIZE) {
+    if (token !== buildToken) return
+    const chunk = base.slice(i, i + CHUNK_SIZE)
+
+    chunk.forEach(inst => {
+      const result = calculateInstanceForRunWithPricesAndPassFilters(inst.id, appStore.config, unifiedPriceMap)
+      if (result && result.isDungeon) {
+        results.push({
+          ...result,
+          key: `global_${result.id}`
+        })
+      }
+    })
+
+    await new Promise(resolve => setTimeout(resolve, 0))
+  }
+
+  if (token !== buildToken) return
+
+  results.sort((a, b) => (b.totalKamas || 0) - (a.totalKamas || 0))
+  sortedInstances.value = results
+}
 
 // Visible instances for infinite scroll
 const visibleInstances = computed(() => {
@@ -185,6 +205,20 @@ watch(() => sortedInstances.value.length, () => {
 watch(() => appStore.config, () => {
   visibleCount.value = ITEMS_PER_PAGE
 }, { deep: true })
+
+watch(
+  () => [
+    jsonStore.loaded,
+    jsonStore.instancesBase,
+    jsonStore.pricesLastUpdate,
+    appStore.config
+  ],
+  () => {
+    visibleCount.value = ITEMS_PER_PAGE
+    rebuildSortedInstancesChunked()
+  },
+  { deep: true, immediate: true }
+)
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)

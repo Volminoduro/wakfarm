@@ -4,7 +4,7 @@ import { useAppStore } from '../stores/useAppStore'
 import { formatConfigRun, getNbCyclesForConfig } from './runHelpers'
 
 
-// module-level cache
+// module-level caches
 const calculatedInstanceCache = new Map()
 const calculatedInstanceWithPriceCache = new Map()
 
@@ -141,6 +141,7 @@ export function _processLoots(loots, config, itemRarityMap = {}, nbPlayers = 1, 
 export function _calculateInstanceForRun(instanceId, runConfig) {
   const key = _makeCalculatedInstanceCacheKey(instanceId, runConfig)
   if (calculatedInstanceCache.has(key)) {
+    console.info('[cache-hit] calculatedInstanceCache', key)
     return calculatedInstanceCache.get(key)
   }
 
@@ -187,11 +188,13 @@ export function _calculateInstanceForRun(instanceId, runConfig) {
 export function calculateInstanceForRunWithPricesAndPassFilters(instanceId, runConfig, priceMap) {
   const calculatedInstance = _calculateInstanceForRun(instanceId, runConfig)
   if (!calculatedInstance) return null
-  const key = _makeCalculatedInstanceWithPricesCacheKey(instanceId, runConfig, priceMap)
+  const priceSignature = _getPriceSignatureForItems(calculatedInstance.items, priceMap)
+  const key = _makeCalculatedInstanceWithPricesCacheKey(instanceId, runConfig, priceSignature)
   
   let result = null
 
   if (calculatedInstanceWithPriceCache.has(key)) {
+    console.info('[cache-hit] calculatedInstanceWithPriceCache', key)
     result = calculatedInstanceWithPriceCache.get(key)
   } else {
     const itemsWithPrices = (calculatedInstance.items || []).map(it => {
@@ -224,34 +227,44 @@ function _makeCalculatedInstanceCacheKey(instanceId, config) {
   return `${instanceId}|${JSON.stringify(relevant)}`
 }
 
-function _makeCalculatedInstanceWithPricesCacheKey(instanceId, config, priceMap) {
-  const server = useAppStore().config.server || 'default'
-  
-  // Create a hash of the price data for the cache key
-  const priceHash = _hashPriceData(priceMap || {})
-  
+function _makeCalculatedInstanceWithPricesCacheKey(instanceId, config, priceSignature) {
+  const appStore = useAppStore()
+  const server = appStore.config.server || 'default'
+
   const relevant = {
     formatConfigRun: formatConfigRun(config),
     nbCycles: getNbCyclesForConfig(config),
     booster: !!config.isBooster,
-    // Include price hash so cache invalidates when prices change
-    priceHash: priceHash
+    priceSignature
   }
 
   return `${instanceId}|${JSON.stringify(relevant)}|${server}`
 }
 
-function _hashPriceData(priceMap) {
-  // Create a simple hash of price data for cache key
-  // This ensures cache invalidates when prices change
-  if (!priceMap || Object.keys(priceMap).length === 0) {
-    return 'no-prices'
+function _getPriceSignatureForItems(items, priceMap) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return 'no-items'
   }
-  
-  const priceString = JSON.stringify(priceMap)
+
+  const orderedIds = items
+    .map(it => String(it.itemId))
+    .filter(id => id && id !== '99999')
+    .sort()
+
+  let signature = ''
+  orderedIds.forEach(itemId => {
+    const price = (priceMap && priceMap[itemId]) || 0
+    signature += `${itemId}:${price}|`
+  })
+
+  return _hashString(signature)
+}
+
+function _hashString(value) {
+  if (!value) return 'no-prices'
   let hash = 0
-  for (let i = 0; i < priceString.length; i++) {
-    const char = priceString.charCodeAt(i)
+  for (let i = 0; i < value.length; i++) {
+    const char = value.charCodeAt(i)
     hash = ((hash << 5) - hash) + char
     hash = hash & hash // Convert to 32bit integer
   }

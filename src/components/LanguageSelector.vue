@@ -24,8 +24,10 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { setI18nLocale } from '@/i18n'
 
-const { locale } = useI18n()
+const i18n = useI18n({ useScope: 'global' })
+const { locale } = i18n
 
 const currentLanguage = computed(() => locale.value)
 
@@ -36,9 +38,11 @@ const languages = [
   { code: 'pt', name: 'Português', flag: '🇵🇹' }
 ]
 
-const handleChange = (langCode) => {
-  locale.value = langCode
-  localStorage.setItem('lang', langCode)
+const handleChange = async (langCode) => {
+  const changed = await setI18nLocale(i18n, langCode)
+  if (changed) {
+    localStorage.setItem('lang', langCode)
+  }
 }
 
 </script>

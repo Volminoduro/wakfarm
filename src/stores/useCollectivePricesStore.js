@@ -57,6 +57,15 @@ function getServerList() {
   return ['pandora', 'rubilax', 'ogrest', 'neo-pandora', 'neo-rubilax', 'neo-ogrest']
 }
 
+function bumpPricesVersion() {
+  try {
+    const jsonStore = useJsonStore()
+    jsonStore.pricesLastUpdate = Date.now()
+  } catch (e) {
+    // Silent fail - non-critical
+  }
+}
+
 export const useCollectivePricesStore = defineStore('collectivePrices', {
   state: () => ({
     prices: {},
@@ -188,6 +197,7 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
         }))
 
         this.prices = allPrices
+        bumpPricesVersion()
         this.subscribeToAllPrices()
       } catch (err) {
         console.error('❌ Error loading prices:', err)
@@ -229,6 +239,7 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
             })
 
             this.prices = { ...this.prices }
+            bumpPricesVersion()
           }, (err) => {
             console.error(`❌ Firebase listener error for ${server}:`, err)
           })
@@ -287,6 +298,7 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
         
         // Also add to price_history for audit trail
         await this.addPriceHistory(server, itemId, oldPrice, newPrice)
+        bumpPricesVersion()
         return true
       } catch (err) {
         console.error('❌ Error updating price:', err)
@@ -357,6 +369,7 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
         }))
         
         this.prices = {}
+        bumpPricesVersion()
       } catch (err) {
         console.error('❌ Error clearing prices:', err)
       }

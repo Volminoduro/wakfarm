@@ -465,7 +465,7 @@ const { elementRef: rarityDropdownRefPersonal } = useClickOutside(() => {
   isRarityDropdownOpenPersonal.value = false
 })
 
-const filterInstancesPersonal = useLocalStorage(LS_KEYS.PRICES_PERSONAL_INSTANCES, null, { deep: true })
+const filterInstancesPersonal = useLocalStorage(LS_KEYS.PRICES_PERSONAL_INSTANCES, [], { deep: true })
 
 const isInstancesDropdownOpenPersonal = ref(false)
 const { elementRef: instancesDropdownRefPersonal } = useClickOutside(() => {
@@ -496,7 +496,7 @@ const { elementRef: rarityDropdownRefCollective } = useClickOutside(() => {
   isRarityDropdownOpenCollective.value = false
 })
 
-const filterInstancesCollective = useLocalStorage(LS_KEYS.PRICES_COLLECTIVE_INSTANCES, null, { deep: true })
+const filterInstancesCollective = useLocalStorage(LS_KEYS.PRICES_COLLECTIVE_INSTANCES, [], { deep: true })
 
 const isInstancesDropdownOpenCollective = ref(false)
 const { elementRef: instancesDropdownRefCollective } = useClickOutside(() => {
@@ -531,15 +531,36 @@ const filteredInstancesListCollective = computed(() => {
   return allInstancesList.value.filter(inst => inst.name.toLowerCase().includes(search))
 })
 
+function hasStoredFilter(key) {
+  if (typeof localStorage === 'undefined') return false
+  return localStorage.getItem(key) !== null
+}
+
 watch(allInstancesList, (newList) => {
-  if (filterInstancesPersonal.value === null && newList.length > 0) {
+  if (newList.length === 0) return
+  const stored = hasStoredFilter(LS_KEYS.PRICES_PERSONAL_INSTANCES)
+  if (!stored && filterInstancesPersonal.value.length === 0) {
     filterInstancesPersonal.value = newList.map(i => i.id)
+    return
+  }
+
+  if (stored) {
+    const validIds = new Set(newList.map(i => i.id))
+    filterInstancesPersonal.value = (filterInstancesPersonal.value || []).filter(id => validIds.has(id))
   }
 }, { immediate: true })
 
 watch(allInstancesList, (newList) => {
-  if (filterInstancesCollective.value === null && newList.length > 0) {
+  if (newList.length === 0) return
+  const stored = hasStoredFilter(LS_KEYS.PRICES_COLLECTIVE_INSTANCES)
+  if (!stored && filterInstancesCollective.value.length === 0) {
     filterInstancesCollective.value = newList.map(i => i.id)
+    return
+  }
+
+  if (stored) {
+    const validIds = new Set(newList.map(i => i.id))
+    filterInstancesCollective.value = (filterInstancesCollective.value || []).filter(id => validIds.has(id))
   }
 }, { immediate: true })
 

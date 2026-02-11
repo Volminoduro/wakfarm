@@ -114,7 +114,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useAppStore } from '@/stores/useAppStore'
 import { useJsonStore } from '@/stores/useJsonStore'
 import { useConfigRunStore } from '@/stores/useConfigRunStore'
@@ -219,37 +219,65 @@ function validateTimePeriod(event) {
 
 
 // Build all runs with their kamas/period calculation
-const sortedHourRuns = computed(() => {
-  if (!jsonStore.loaded) return []
-  
+const sortedHourRuns = ref([])
+let buildToken = 0
+const CHUNK_SIZE = 40
+
+async function rebuildSortedHourRunsChunked() {
+  const token = ++buildToken
+  if (!jsonStore.loaded) {
+    sortedHourRuns.value = []
+    return
+  }
+
   // Créer une dépendance réactive aux prix personnels et collectifs et au serveur
   personalPricesStore.prices
   collectivePricesStore.prices
   appStore.config  // Trigger recalculation on any config change (including server)
-  
-  // Utiliser la map de prix unifiée (personnel > collectif)
+  jsonStore.pricesLastUpdate
+
   const unifiedPriceMap = jsonStore.getPriceMapWithPersonal(appStore.config.server)
-  
-  const allRuns = []
-  
-  // Iterate through all configured runs
-  Object.entries(configRunStore.configs).forEach(([instanceId, runs]) => {
-    runs.forEach(config => {
-      const instanceData = calculateInstanceForRunWithPricesAndPassFilters(parseInt(instanceId), config, unifiedPriceMap)
-      
-          if (instanceData && config.time > 0) {
-        allRuns.push({
-          key: `${instanceId}_${config.id}`,
-          instance:instanceData,
-          config: config
-        })
-      }
+  const entries = Object.entries(configRunStore.configs)
+  const results = []
+
+  for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
+    if (token !== buildToken) return
+    const chunk = entries.slice(i, i + CHUNK_SIZE)
+
+    chunk.forEach(([instanceId, runs]) => {
+      runs.forEach(config => {
+        const instanceData = calculateInstanceForRunWithPricesAndPassFilters(parseInt(instanceId), config, unifiedPriceMap)
+        if (instanceData && config.time > 0) {
+          results.push({
+            key: `${instanceId}_${config.id}`,
+            instance: instanceData,
+            config: config
+          })
+        }
+      })
     })
-  })
-  
-  // Sort by kamas/period descending
-  return allRuns.sort((a, b) => b.instance.totalKamas - a.instance.totalKamas)
-})
+
+    await new Promise(resolve => setTimeout(resolve, 0))
+  }
+
+  if (token !== buildToken) return
+
+  results.sort((a, b) => b.instance.totalKamas - a.instance.totalKamas)
+  sortedHourRuns.value = results
+}
+
+watch(
+  () => [
+    jsonStore.loaded,
+    jsonStore.pricesLastUpdate,
+    appStore.config,
+    configRunStore.configs
+  ],
+  () => {
+    rebuildSortedHourRunsChunked()
+  },
+  { deep: true, immediate: true }
+)
 
 const allHourRunsExpanded = computed(() => {
   if (sortedHourRuns.value.length === 0) return false

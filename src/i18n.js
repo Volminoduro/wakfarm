@@ -1,30 +1,44 @@
 
 import { createI18n } from 'vue-i18n'
 
-// Fonction utilitaire pour charger dynamiquement les fichiers JSON de traduction
-async function loadLocaleMessages() {
-  const locales = import.meta.glob('./names/*.json', { eager: true })
-  const messages = {}
-  for (const path in locales) {
-    // Récupère le code langue à partir du nom de fichier (ex: fr.json)
-    const match = path.match(/\/([a-z]{2})\.json$/i)
-    if (match) {
-      const lang = match[1]
-      // On place tout le contenu du JSON sous la clé racine (ex: divers, items, ...)
-      messages[lang] = locales[path].default || locales[path]
-    }
-  }
+const localeLoaders = import.meta.glob('./names/*.json')
+const messagesCache = {}
+
+// Fonction utilitaire pour charger dynamiquement un fichier JSON de traduction
+async function loadLocaleMessages(locale) {
+  if (messagesCache[locale]) return messagesCache[locale]
+
+  const loader = localeLoaders[`./names/${locale}.json`]
+  if (!loader) return null
+
+  const mod = await loader()
+  const messages = mod.default || mod
+  messagesCache[locale] = messages
   return messages
 }
 
-const messagesPromise = loadLocaleMessages()
-
 export async function createI18nInstance(locale = 'fr') {
-  const messages = await messagesPromise
+  const requestedMessages = await loadLocaleMessages(locale)
+  const fallbackMessages = locale === 'fr' ? requestedMessages : await loadLocaleMessages('fr')
+
+  const messages = {
+    fr: fallbackMessages || {},
+    [locale]: requestedMessages || fallbackMessages || {}
+  }
+
   return createI18n({
     legacy: false,
-    locale,
+    locale: requestedMessages ? locale : 'fr',
     fallbackLocale: 'fr',
     messages
   })
+}
+
+export async function setI18nLocale(i18n, locale) {
+  const requestedMessages = await loadLocaleMessages(locale)
+  if (!requestedMessages) return false
+
+  i18n.setLocaleMessage(locale, requestedMessages)
+  i18n.locale.value = locale
+  return true
 }
