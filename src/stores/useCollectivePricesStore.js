@@ -17,14 +17,14 @@ import {
 import { useAlertsStore } from '@/stores/useAlertsStore'
 import { useJsonStore } from '@/stores/useJsonStore'
 
-// Firebase configuration (public - safe for frontend)
+// Firebase configuration from environment variables
 const firebaseConfig = {
-  apiKey: "AIzaSyCDE8MyKZnlvBraESAHGb7JyyLZJuP8ijU",
-  authDomain: "wakfarm-p2p.firebaseapp.com",
-  projectId: "wakfarm-p2p",
-  storageBucket: "wakfarm-p2p.firebasestorage.app",
-  messagingSenderId: "742884437476",
-  appId: "1:742884437476:web:d0a97061e96f6ac9902bf1"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 }
 
 // Anonymous auth + whitelist (no password needed)
