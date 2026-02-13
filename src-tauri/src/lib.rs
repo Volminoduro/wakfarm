@@ -4,6 +4,7 @@ use tauri::State;
 use mac_address::get_mac_address;
 use sha2::{Sha256, Digest};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::process::Command;
 use keyring::Entry;
 
 #[command]
@@ -44,6 +45,54 @@ fn delete_secure_value(key: String) -> Result<(), String> {
     
     entry.delete_credential()
         .map_err(|e| format!("Failed to delete: {}", e))
+}
+
+#[command]
+async fn install_update(download_url: String) -> Result<(), String> {
+    if !cfg!(target_os = "windows") {
+        return Err("Update installer is only supported on Windows".to_string());
+    }
+
+    let response = reqwest::get(&download_url)
+        .await
+        .map_err(|e| format!("Download error: {}", e))?;
+
+    if !response.status().is_success() {
+        return Err(format!("Download failed with status: {}", response.status()));
+    }
+
+    let bytes = response
+        .bytes()
+        .await
+        .map_err(|e| format!("Download read error: {}", e))?;
+
+    let temp_path = std::env::temp_dir().join("wakfarm_update.exe");
+    std::fs::write(&temp_path, &bytes)
+        .map_err(|e| format!("Failed to write update: {}", e))?;
+
+    let current_exe = std::env::current_exe()
+        .map_err(|e| format!("Failed to resolve current exe: {}", e))?;
+
+    // Create batch script to handle the replacement
+    let batch_path = std::env::temp_dir().join("wakfarm_update.bat");
+    let batch_content = format!(
+        "@echo off\nREM Wait for app to close\nping 127.0.0.1 -n 3 > nul\nREM Replace executable\nmove /Y \"{}\" \"{}\"\nREM Start updated app\nstart \"\" \"{}\"\nREM Clean up batch file\nexit /b 0\n",
+        temp_path.to_string_lossy(),
+        current_exe.to_string_lossy(),
+        current_exe.to_string_lossy()
+    );
+
+    std::fs::write(&batch_path, batch_content)
+        .map_err(|e| format!("Failed to create batch script: {}", e))?;
+
+    // Launch the batch script and close the window when done
+    Command::new("cmd")
+        .args(["/C", "call", batch_path.to_string_lossy().as_ref()])
+        .spawn()
+        .map_err(|e| format!("Failed to launch updater: {}", e))?;
+
+    // Exit the app immediately to allow batch to replace the exe
+    std::process::exit(0);
 }
 
 #[command]
@@ -165,6 +214,7 @@ pub fn run() {
             get_secure_value,
             set_secure_value,
             delete_secure_value,
+            install_update,
             enable_autostart,
             disable_autostart,
             is_autostart_enabled,

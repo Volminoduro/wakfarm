@@ -10160,7 +10160,7 @@
     "tab_prices": "Precios",
     "tab_kamas_run": "Kamas / Run",
     "tab_kamas_hour": "Kamas / Hora",
-    "footer_title": "WAKFARM - Calculadora de rentabilidad Wakfu",
+    "footer_title": "WAKFARM",
     "footer_steles_update": "Estelas actualizadas el",
     "footer_disclaimer": "Proyecto no oficial - Wakfu © Ankama Games",
     "footer_contact": "Contacto Discord",
@@ -10237,6 +10237,12 @@
     "settings": {
         "launchOnStartup": "Iniciar la aplicación al arrancar Windows",
         "minimizeToTray": "Al cerrar (X), minimizar a la bandeja del sistema (iconos ocultos)"
+    },
+    "update": {
+        "title": "Actualización",
+        "message": "Nueva versión {version} disponible. ¿Actualizar ahora?",
+        "manualDownload": "Descargue la actualización desde:\n{url}",
+        "failed": "La actualización falló: {error}"
     }
   }
 }

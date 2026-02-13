@@ -1,6 +1,6 @@
 [package]
-name = "app"
-version = "0.1.0"
+name = "wakfarm"
+version = "0.1.5"
 description = "A Tauri App"
 authors = ["you"]
 license = ""
@@ -11,7 +11,7 @@ rust-version = "1.77.2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "app_lib"
+name = "wakfarm_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
@@ -27,6 +27,7 @@ tauri-plugin-dialog = "2"
 mac_address = "1.1.8"
 sha2 = "0.10.9"
 keyring = "3.2.2"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.52"
