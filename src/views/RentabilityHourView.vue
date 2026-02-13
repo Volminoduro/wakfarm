@@ -14,7 +14,7 @@
             @click.stop
             @input="validateTimePeriod"
             class="cf-input text-sm py-0 px-2 text-center w-16 h-6"
-            min="1"
+            min="0"
             max="999"
             placeholder="60"
           />
@@ -210,11 +210,18 @@ const timePeriod = useLocalStorage(LS_KEYS.TIME_PERIOD, 60)
 // Validate time period input
 function validateTimePeriod(event) {
   const value = event.target.value
-  // When input is cleared, reset to default 60 (so cards update predictably)
   if (value === '' || value === null) {
-    timePeriod.value = 60
+    timePeriod.value = null
+    return
   }
-  timePeriod.value = Math.max(1, Math.min(999, parseInt(value) || 60))
+
+  const parsed = Number.parseInt(value, 10)
+  if (Number.isNaN(parsed)) {
+    timePeriod.value = null
+    return
+  }
+
+  timePeriod.value = Math.min(999, Math.max(0, parsed))
 }
 
 

@@ -99,7 +99,8 @@ const localTimePeriod = useLocalStorage(LS_KEYS.TIME_PERIOD, 60)
 const iterationsPerPeriod = computed(() => {
   if (!props.config?.time || props.config.time === 0) return 0  
   const rawPeriod = (localTimePeriod.value ?? (appStore.config && appStore.config.timePeriod) ?? 60)
-  const period = Number(rawPeriod) || 60
+  const numeric = Number(rawPeriod)
+  const period = Number.isFinite(numeric) ? numeric : 60
 
   return Math.floor(period / props.config.time)
 })

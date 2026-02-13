@@ -31,7 +31,12 @@ export function formatConfigRun(config) {
 }
 
 export function getNbCyclesForConfig(config) {
-  let nbCycles = config?.time ? Math.floor(useLocalStorage(LS_KEYS.TIME_PERIOD, 60).value / config.time) : 1
+  const storedPeriod = useLocalStorage(LS_KEYS.TIME_PERIOD, 60).value
+  const parsedPeriod = (storedPeriod === '' || storedPeriod == null)
+    ? null
+    : Number(storedPeriod)
+  const period = Number.isFinite(parsedPeriod) ? parsedPeriod : 60
+  let nbCycles = config?.time ? Math.floor(period / config.time) : 1
   if (config?.isRift) {
     const wavesCompleted = config.wavesCompleted || 1
     nbCycles *= wavesCompleted
