@@ -45,7 +45,6 @@ try {
 // Helper to get list of servers from jsonStore
 function getServerList() {
   try {
-    const { useJsonStore } = require('@/stores/useJsonStore')
     const jsonStore = useJsonStore()
     if (jsonStore.servers && Array.isArray(jsonStore.servers)) {
       return jsonStore.servers.map(s => s.id)

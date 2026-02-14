@@ -114,19 +114,18 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useAppStore } from '@/stores/useAppStore'
 import { useJsonStore } from '@/stores/useJsonStore'
 import { useConfigRunStore } from '@/stores/useConfigRunStore'
-import { usePersonalPricesStore } from '@/stores/usePersonalPricesStore'
-import { useCollectivePricesStore } from '@/stores/useCollectivePricesStore'
 import { useLocalStorage } from '@/composables/useLocalStorage'
+import { useChunkedBuilder } from '@/composables/useChunkedBuilder'
 import { LS_KEYS } from '@/constants/localStorageKeys'
 // use CSS variables instead of importing color constants
 import RunConfigCard from '@/components/RunConfig/RunConfigCard.vue'
 import InstanceCard from '@/components/Instance/InstanceCard.vue'
 import ToggleAllButton from '@/components/ToggleAllButton.vue'
-import { calculateInstanceForRunWithPricesAndPassFilters } from '@/utils/instanceProcessor'
+import { calculateInstanceForRunWithPricesAndPassFilters, clearCalculatedInstanceCache, clearCalculatedInstanceWithPricesCache } from '@/utils/instanceProcessor'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -134,8 +133,6 @@ const { t } = useI18n()
 const appStore = useAppStore()
 const jsonStore = useJsonStore()
 const configRunStore = useConfigRunStore()
-const personalPricesStore = usePersonalPricesStore()
-const collectivePricesStore = useCollectivePricesStore()
 
 // Sub-tab management
 const subTab = useLocalStorage(LS_KEYS.RUNS_SUBTAB, 'time')
@@ -226,52 +223,26 @@ function validateTimePeriod(event) {
 
 
 // Build all runs with their kamas/period calculation
-const sortedHourRuns = ref([])
-let buildToken = 0
-const CHUNK_SIZE = 40
-
-async function rebuildSortedHourRunsChunked() {
-  const token = ++buildToken
-  if (!jsonStore.loaded) {
-    sortedHourRuns.value = []
-    return
-  }
-
-  // Créer une dépendance réactive aux prix personnels et collectifs et au serveur
-  personalPricesStore.prices
-  collectivePricesStore.prices
-  appStore.config  // Trigger recalculation on any config change (including server)
-  jsonStore.pricesLastUpdate
-
-  const unifiedPriceMap = jsonStore.getPriceMapWithPersonal(appStore.config.server)
-  const entries = Object.entries(configRunStore.configs)
-  const results = []
-
-  for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
-    if (token !== buildToken) return
-    const chunk = entries.slice(i, i + CHUNK_SIZE)
-
-    chunk.forEach(([instanceId, runs]) => {
-      runs.forEach(config => {
-        const instanceData = calculateInstanceForRunWithPricesAndPassFilters(parseInt(instanceId), config, unifiedPriceMap)
-        if (instanceData && config.time > 0) {
-          results.push({
-            key: `${instanceId}_${config.id}`,
-            instance: instanceData,
-            config: config
-          })
-        }
-      })
+const { results: sortedHourRuns, rebuild: rebuildSortedHourRunsChunked } = useChunkedBuilder({
+  getBase: () => Object.entries(configRunStore.configs),
+  buildItem: ([instanceId, runs]) => {
+    if (!jsonStore.loaded) return []
+    const unifiedPriceMap = jsonStore.getPriceMapWithPersonal(appStore.config.server)
+    const timePeriodValue = Number.isFinite(timePeriod.value) ? timePeriod.value : null
+    return runs.map(config => {
+      const configWithServer = { ...config, server: appStore.config.server, timePeriod: timePeriodValue }
+      const instanceData = calculateInstanceForRunWithPricesAndPassFilters(parseInt(instanceId, 10), configWithServer, unifiedPriceMap)
+      if (!instanceData || configWithServer.time <= 0) return null
+      return {
+        key: `${instanceId}_${config.id}`,
+        instance: instanceData,
+        config: configWithServer
+      }
     })
-
-    await new Promise(resolve => setTimeout(resolve, 0))
-  }
-
-  if (token !== buildToken) return
-
-  results.sort((a, b) => b.instance.totalKamas - a.instance.totalKamas)
-  sortedHourRuns.value = results
-}
+  },
+  sortFn: (a, b) => b.instance.totalKamas - a.instance.totalKamas,
+  chunkSize: 40
+})
 
 watch(
   () => [
@@ -284,6 +255,21 @@ watch(
     rebuildSortedHourRunsChunked()
   },
   { deep: true, immediate: true }
+)
+
+watch(
+  () => appStore.config.server,
+  () => {
+    clearCalculatedInstanceCache()
+    clearCalculatedInstanceWithPricesCache()
+  }
+)
+
+watch(
+  () => jsonStore.pricesLastUpdate,
+  () => {
+    clearCalculatedInstanceWithPricesCache()
+  }
 )
 
 const allHourRunsExpanded = computed(() => {

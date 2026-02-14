@@ -10,6 +10,7 @@ export const useJsonStore = defineStore('data', {
     servers: [],
     loaded: false,
     pricesLastUpdate: null, // Used for cache invalidation when prices change
+    _priceMapCache: { server: null, version: null, map: null },
     rawInstances: [],
     rawItems: [],
     _rawMapping: [],
@@ -72,6 +73,17 @@ export const useJsonStore = defineStore('data', {
     getPriceMapWithPersonal(server) {
       const personalStore = usePersonalPricesStore()
       const collectiveStore = useCollectivePricesStore()
+      const version = this.pricesLastUpdate || 0
+      const serverKey = server || 'default'
+
+      if (
+        this._priceMapCache &&
+        this._priceMapCache.server === serverKey &&
+        this._priceMapCache.version === version &&
+        this._priceMapCache.map
+      ) {
+        return this._priceMapCache.map
+      }
       
       // Gather all items that have prices
       const itemIds = new Set()
@@ -99,6 +111,7 @@ export const useJsonStore = defineStore('data', {
         }
       })
       
+      this._priceMapCache = { server: serverKey, version, map: unifiedMap }
       return unifiedMap
     },
 

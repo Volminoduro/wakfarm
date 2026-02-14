@@ -219,10 +219,13 @@ export function calculateInstanceForRunWithPricesAndPassFilters(instanceId, runC
 }
 
 function _makeCalculatedInstanceCacheKey(instanceId, config) {
+  const appStore = useAppStore()
+  const server = config?.server || appStore.config.server || 'default'
   const relevant = {
     formatConfigRun: formatConfigRun(config),
     nbCycles: getNbCyclesForConfig(config),
-    booster: !!config.isBooster
+    booster: !!config.isBooster,
+    server
   }
   return `${instanceId}|${JSON.stringify(relevant)}`
 }
@@ -279,6 +282,10 @@ export function clearCalculatedInstanceCacheWithPricesForInstance(instanceId) {
 }
 
 // invalidation helpers
+export function clearCalculatedInstanceCache() {
+  calculatedInstanceCache.clear()
+}
+
 export function clearCalculatedInstanceWithPricesCache() {
   calculatedInstanceWithPriceCache.clear()
 }

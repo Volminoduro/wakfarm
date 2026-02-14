@@ -31,7 +31,8 @@ export function formatConfigRun(config) {
 }
 
 export function getNbCyclesForConfig(config) {
-  const storedPeriod = useLocalStorage(LS_KEYS.TIME_PERIOD, 60).value
+  const periodOverride = config && Number.isFinite(config.timePeriod) ? config.timePeriod : null
+  const storedPeriod = periodOverride ?? useLocalStorage(LS_KEYS.TIME_PERIOD, 60).value
   const parsedPeriod = (storedPeriod === '' || storedPeriod == null)
     ? null
     : Number(storedPeriod)

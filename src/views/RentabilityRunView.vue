@@ -98,112 +98,57 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useAppStore } from '@/stores/useAppStore'
 import { useJsonStore } from '@/stores/useJsonStore'
-import { usePersonalPricesStore } from '@/stores/usePersonalPricesStore'
-import { useCollectivePricesStore } from '@/stores/useCollectivePricesStore'
 import InstanceCard from '@/components/Instance/InstanceCard.vue'
 import ToggleAllButton from '@/components/ToggleAllButton.vue'
 import { useLocalStorage } from '@/composables/useLocalStorage'
+import { useChunkedBuilder } from '@/composables/useChunkedBuilder'
+import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
 import { LS_KEYS } from '@/constants/localStorageKeys'
-import { calculateInstanceForRunWithPricesAndPassFilters } from '@/utils/instanceProcessor'
+import { calculateInstanceForRunWithPricesAndPassFilters, clearCalculatedInstanceCache, clearCalculatedInstanceWithPricesCache } from '@/utils/instanceProcessor'
 
 
 const appStore = useAppStore()
 const jsonStore = useJsonStore()
-const personalPricesStore = usePersonalPricesStore()
-const collectivePricesStore = useCollectivePricesStore()
 
 // Gestion de l'expansion pour Kamas/Run (persistée en localStorage)
 const expandedRun = useLocalStorage(LS_KEYS.EXPANDED_RUN, [])
 
 // Infinite scroll state
-const visibleCount = ref(20)
 const ITEMS_PER_PAGE = 20
-const scrollContainer = ref(null)
 
 // Expanded run keys are persisted in `expandedRun` (localStorage)
 
-const sortedInstances = ref([])
-let buildToken = 0
-const CHUNK_SIZE = 40
-
-async function rebuildSortedInstancesChunked() {
-  const token = ++buildToken
-  if (!jsonStore.loaded) {
-    sortedInstances.value = []
-    return
-  }
-
-
-  // Créer une dépendance réactive aux prix personnels et collectifs et au serveur
-  personalPricesStore.prices
-  collectivePricesStore.prices
-  appStore.config  // Trigger recalculation on any config change (including server)
-  jsonStore.pricesLastUpdate
-
-  const unifiedPriceMap = jsonStore.getPriceMapWithPersonal(appStore.config.server)
-  const base = Array.isArray(jsonStore.instancesBase) ? jsonStore.instancesBase : []
-  const results = []
-
-  for (let i = 0; i < base.length; i += CHUNK_SIZE) {
-    if (token !== buildToken) return
-    const chunk = base.slice(i, i + CHUNK_SIZE)
-
-    chunk.forEach(inst => {
-      const result = calculateInstanceForRunWithPricesAndPassFilters(inst.id, appStore.config, unifiedPriceMap)
-      if (result && result.isDungeon) {
-        results.push({
-          ...result,
-          key: `global_${result.id}`
-        })
-      }
-    })
-
-    await new Promise(resolve => setTimeout(resolve, 0))
-  }
-
-  if (token !== buildToken) return
-
-  results.sort((a, b) => (b.totalKamas || 0) - (a.totalKamas || 0))
-  sortedInstances.value = results
-}
+const { results: sortedInstances, rebuild: rebuildSortedInstancesChunked } = useChunkedBuilder({
+  getBase: () => (Array.isArray(jsonStore.instancesBase) ? jsonStore.instancesBase : []),
+  buildItem: (inst) => {
+    const unifiedPriceMap = jsonStore.getPriceMapWithPersonal(appStore.config.server)
+    const result = calculateInstanceForRunWithPricesAndPassFilters(inst.id, appStore.config, unifiedPriceMap)
+    if (result && result.isDungeon) {
+      return { ...result, key: `global_${result.id}` }
+    }
+    return null
+  },
+  sortFn: (a, b) => (b.totalKamas || 0) - (a.totalKamas || 0),
+  chunkSize: 40
+})
 
 // Visible instances for infinite scroll
-const visibleInstances = computed(() => {
-  return sortedInstances.value.slice(0, visibleCount.value)
-})
-
-const hasMore = computed(() => {
-  return visibleCount.value < sortedInstances.value.length
-})
-
-// Handle scroll for infinite loading
-function handleScroll() {
-  if (!hasMore.value) return
-  
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-  const windowHeight = window.innerHeight
-  const documentHeight = document.documentElement.scrollHeight
-  
-  // Load more when user is 500px from bottom
-  if (scrollTop + windowHeight >= documentHeight - 500) {
-    visibleCount.value = Math.min(
-      visibleCount.value + ITEMS_PER_PAGE,
-      sortedInstances.value.length
-    )
-  }
-}
-
-// Reset visible count when data changes
-watch(() => sortedInstances.value.length, () => {
-  visibleCount.value = ITEMS_PER_PAGE
+const {
+  visibleItems: visibleInstances,
+  hasMore,
+  reset: resetInfiniteScroll
+} = useInfiniteScroll({
+  items: sortedInstances,
+  itemsPerPage: ITEMS_PER_PAGE,
+  threshold: 500
 })
 
 // Also reset when config changes (like server, modulated, etc.)
 watch(() => appStore.config, () => {
-  visibleCount.value = ITEMS_PER_PAGE
+  resetInfiniteScroll()
 }, { deep: true })
 
 watch(
@@ -214,19 +159,26 @@ watch(
     appStore.config
   ],
   () => {
-    visibleCount.value = ITEMS_PER_PAGE
+    resetInfiniteScroll()
     rebuildSortedInstancesChunked()
   },
   { deep: true, immediate: true }
 )
 
-onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
-})
+watch(
+  () => appStore.config.server,
+  () => {
+    clearCalculatedInstanceCache()
+    clearCalculatedInstanceWithPricesCache()
+  }
+)
 
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
-})
+watch(
+  () => jsonStore.pricesLastUpdate,
+  () => {
+    clearCalculatedInstanceWithPricesCache()
+  }
+)
 
 const allRunExpanded = computed(() => {
   if (sortedInstances.value.length === 0) return false
