@@ -12,8 +12,12 @@ import {
 } from 'firebase/firestore'
 import {
   getAuth,
-  signInAnonymously
+  signInAnonymously,
+  setPersistence,
+  browserLocalPersistence
 } from 'firebase/auth'
+import { invoke } from '@tauri-apps/api/core'
+import { getVersion } from '@tauri-apps/api/app'
 import { useAlertsStore } from '@/stores/useAlertsStore'
 import { useJsonStore } from '@/stores/useJsonStore'
 
@@ -72,9 +76,12 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
     isAuthenticated: false,
     isLocalUpdate: false,
     machineID: null,
+    userID: null,
+    appVersion: null,
     authError: null,
     isBlacklisted: false,
-    blacklistType: null
+    blacklistType: null,
+    readPermissionDeniedShown: false
   }),
 
   actions: {
@@ -84,10 +91,34 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
         return
       }
 
-      // Sign in anonymously (auto, no user interaction)
-      const authenticated = await this.authenticateAnonymous()
+      try {
+        // Get machine ID to ensure consistent auth across builds
+        this.machineID = await invoke('get_machine_id')
+      } catch (err) {
+        console.error('❌ Failed to get machine ID:', err)
+        // Continue without machine ID (fallback to standard anonymous auth)
+      }
+
+      try {
+        this.appVersion = await getVersion()
+      } catch (err) {
+        console.warn('⚠️ Could not get app version:', err)
+        this.appVersion = null
+      }
+
+      // Configure Firebase Auth persistence
+      try {
+        await setPersistence(auth, browserLocalPersistence)
+      } catch (err) {
+        console.warn('⚠️ Could not set auth persistence:', err)
+      }
+
+      // Try to restore existing authentication or create new one
+      const authenticated = await this.authenticateWithMachineID()
       
       if (authenticated) {
+        // Map Firebase UID to machine ID for rules lookups
+        await this.ensureClientMapping()
         // Auto-whitelist on first connection
         await this.ensureWhitelisted()
         // Check blacklist status
@@ -95,16 +126,22 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
         await this.loadPrices()
         this.isInitialized = true
       } else {
-        console.error('❌ Anonymous authentication failed')
-        this.authError = 'Anonymous authentication failed'
+        console.error('❌ Authentication failed')
+        this.authError = 'Authentication failed'
       }
     },
 
-    async authenticateAnonymous() {
+    async authenticateWithMachineID() {
       try {
+        // Sign in anonymously with Firebase Auth (for permissions)
         const userCred = await signInAnonymously(auth)
-        this.userID = userCred.user.uid
+        const firebaseUID = userCred.user.uid
+        
+        // Use machine ID as authorID for consistent identification
+        // Firebase UID can change, but machine ID remains constant per machine
+        this.userID = firebaseUID // Keep for Firebase Auth
         this.isAuthenticated = true
+        
         return true
       } catch (error) {
         console.error('❌ Auth failed:', error.message)
@@ -114,16 +151,36 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
       }
     },
 
-    async ensureWhitelisted() {
-      if (!this.userID || !db) return
+    async ensureClientMapping() {
+      if (!this.userID || !this.machineID || !db) return
 
       try {
-        const snap = await getDoc(doc(db, 'allowlist', this.userID))
+        await setDoc(
+          doc(db, 'client_ids', this.userID),
+          {
+            machineID: this.machineID,
+            appVersion: this.appVersion || 'unknown',
+            updatedAt: Date.now()
+          },
+          { merge: true }
+        )
+      } catch (error) {
+        console.error('❌ client_ids mapping error:', error)
+      }
+    },
+
+    async ensureWhitelisted() {
+      if (!this.machineID || !db) return
+
+      try {
+        // Use machine ID for whitelist/blacklist to ensure consistency
+        const snap = await getDoc(doc(db, 'allowlist', this.machineID))
         
         if (!snap.exists()) {
-          await setDoc(doc(db, 'allowlist', this.userID), {
+          await setDoc(doc(db, 'allowlist', this.machineID), {
             createdAt: Date.now(),
-            appVersion: '1.0.0'
+            appVersion: this.appVersion || 'unknown',
+            firebaseUID: this.userID // Store Firebase UID for reference
           })
         }
       } catch (error) {
@@ -132,11 +189,12 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
     },
 
     async checkBlacklistStatus() {
-      if (!this.userID || !db) return
+      if (!this.machineID || !db) return
 
       try {
-        const readBlacklistDoc = await getDoc(doc(db, 'blacklist_read', this.userID))
-        const writeBlacklistDoc = await getDoc(doc(db, 'blacklist_write', this.userID))
+        // Use machine ID for blacklist checks
+        const readBlacklistDoc = await getDoc(doc(db, 'blacklist_read', this.machineID))
+        const writeBlacklistDoc = await getDoc(doc(db, 'blacklist_write', this.machineID))
 
         if (readBlacklistDoc.exists()) {
           this.isBlacklisted = true
@@ -190,6 +248,11 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
               allPrices[server][String(doc.id)] = data
             })
           } catch (err) {
+            if (!this.readPermissionDeniedShown && err?.code === 'permission-denied') {
+              const alertsStore = useAlertsStore()
+              alertsStore.addAlert('danger', 'alert_blacklist_read', {}, 0)
+              this.readPermissionDeniedShown = true
+            }
             // Collection might not exist yet
             allPrices[server] = {}
           }
@@ -240,6 +303,11 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
             this.prices = { ...this.prices }
             bumpPricesVersion()
           }, (err) => {
+            if (!this.readPermissionDeniedShown && err?.code === 'permission-denied') {
+              const alertsStore = useAlertsStore()
+              alertsStore.addAlert('danger', 'alert_blacklist_read', {}, 0)
+              this.readPermissionDeniedShown = true
+            }
             console.error(`❌ Firebase listener error for ${server}:`, err)
           })
         } catch (err) {
@@ -280,7 +348,7 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
       const update = {
         price: newPrice,
         lastUpdated: Date.now(),
-        authorID: this.userID,
+        authorID: this.machineID, // Use machine ID for consistent author identification
         itemId: itemId
       }
 
@@ -325,7 +393,7 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
           oldPrice,
           newPrice,
           timestamp: Date.now(),
-          authorID: this.userID
+          authorID: this.machineID // Use machine ID for consistent author identification
         }
 
         const collectionName = `price_history_${server.toLowerCase()}`
