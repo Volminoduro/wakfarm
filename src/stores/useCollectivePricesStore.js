@@ -81,6 +81,13 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
     authError: null,
     isBlacklisted: false,
     blacklistType: null,
+    blacklistReadExists: false,
+    blacklistWriteExists: false,
+    blacklistChecked: false,
+    isAllowlisted: false,
+    allowlistChecked: false,
+    blacklistUnsubRead: null,
+    blacklistUnsubWrite: null,
     readPermissionDeniedShown: false
   }),
 
@@ -123,6 +130,8 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
         await this.ensureWhitelisted()
         // Check blacklist status
         await this.checkBlacklistStatus()
+        // Subscribe to blacklist changes for real-time status
+        this.subscribeBlacklistStatus()
         await this.loadPrices()
         this.isInitialized = true
       } else {
@@ -175,6 +184,7 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
       try {
         // Use machine ID for whitelist/blacklist to ensure consistency
         const snap = await getDoc(doc(db, 'allowlist', this.machineID))
+        this.isAllowlisted = snap.exists()
         
         if (!snap.exists()) {
           await setDoc(doc(db, 'allowlist', this.machineID), {
@@ -182,7 +192,9 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
             appVersion: this.appVersion || 'unknown',
             firebaseUID: this.userID // Store Firebase UID for reference
           })
+          this.isAllowlisted = true
         }
+        this.allowlistChecked = true
       } catch (error) {
         console.error('❌ Whitelist error:', error)
       }
@@ -196,11 +208,16 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
         const readBlacklistDoc = await getDoc(doc(db, 'blacklist_read', this.machineID))
         const writeBlacklistDoc = await getDoc(doc(db, 'blacklist_write', this.machineID))
 
-        if (readBlacklistDoc.exists()) {
+        const readExists = readBlacklistDoc.exists()
+        const writeExists = writeBlacklistDoc.exists()
+        this.blacklistReadExists = readExists
+        this.blacklistWriteExists = writeExists
+
+        if (readExists) {
           this.isBlacklisted = true
           this.blacklistType = 'read'
           console.warn('⚠️ User READ-blacklisted')
-        } else if (writeBlacklistDoc.exists()) {
+        } else if (writeExists) {
           this.isBlacklisted = true
           this.blacklistType = 'write'
           console.warn('⚠️ User WRITE-blacklisted')
@@ -208,8 +225,53 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
           this.isBlacklisted = false
           this.blacklistType = null
         }
+        this.blacklistChecked = true
       } catch (error) {
         console.error('❌ Blacklist check error:', error)
+      }
+    },
+
+    subscribeBlacklistStatus() {
+      if (!this.machineID || !db) return
+
+      if (this.blacklistUnsubRead || this.blacklistUnsubWrite) {
+        return
+      }
+
+      let readExists = false
+      let writeExists = false
+
+      const applyStatus = () => {
+        this.blacklistReadExists = readExists
+        this.blacklistWriteExists = writeExists
+        if (readExists) {
+          this.isBlacklisted = true
+          this.blacklistType = 'read'
+        } else if (writeExists) {
+          this.isBlacklisted = true
+          this.blacklistType = 'write'
+        } else {
+          this.isBlacklisted = false
+          this.blacklistType = null
+        }
+        this.blacklistChecked = true
+      }
+
+      try {
+        const readRef = doc(db, 'blacklist_read', this.machineID)
+        const writeRef = doc(db, 'blacklist_write', this.machineID)
+
+        this.blacklistUnsubRead = onSnapshot(readRef, (snap) => {
+          readExists = snap.exists()
+          applyStatus()
+        })
+
+        this.blacklistUnsubWrite = onSnapshot(writeRef, (snap) => {
+          writeExists = snap.exists()
+          applyStatus()
+        })
+      } catch (error) {
+        console.error('❌ Blacklist subscribe error:', error)
       }
     },
 
