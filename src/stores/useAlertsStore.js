@@ -22,6 +22,22 @@ export const useAlertsStore = defineStore('alerts', () => {
     return id
   }
 
+  // Add a raw text alert (not using i18n keys)
+  function addRawAlert(type, rawMessage, duration = 8000) {
+    const id = nextId++
+    const isTemporary = duration > 0
+
+    alerts.value.push({ id, type, rawMessage, params: {}, isTemporary })
+
+    if (duration > 0) {
+      setTimeout(() => {
+        removeAlert(id)
+      }, duration)
+    }
+
+    return id
+  }
+
   // Remove alert by ID
   function removeAlert(id) {
     const index = alerts.value.findIndex(a => a.id === id)
@@ -38,6 +54,7 @@ export const useAlertsStore = defineStore('alerts', () => {
   return {
     alerts,
     addAlert,
+    addRawAlert,
     removeAlert,
     clearAlerts
   }

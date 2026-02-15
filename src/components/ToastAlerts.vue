@@ -5,13 +5,13 @@
         v-for="alert in visibleToasts"
         :key="alert.id"
         class="toast-alert shadow-2xl rounded-lg p-4 border-2 flex items-start gap-3 animate-slide-in"
-        :class="alert.type === 'danger' ? 'bg-red-900/95 border-red-500' : 'bg-orange-900/95 border-orange-500'"
+        :class="toastClass(alert.type)"
       >
         <span class="text-2xl flex-shrink-0">
-          {{ alert.type === 'danger' ? '●' : '▲' }}
+          {{ toastIcon(alert.type) }}
         </span>
         <div class="flex-1 text-white text-sm">
-          {{ alert.message }}
+          {{ alert.rawMessage ? alert.rawMessage : alert.message }}
         </div>
         <button 
           @click="removeToast(alert.id)"
@@ -40,12 +40,26 @@ const visibleToasts = computed(() => {
     .filter(alert => alert.isTemporary)
     .map(alert => ({
       ...alert,
-      message: t(`divers.${alert.messageKey}`, alert.params)
+      message: alert.rawMessage ? alert.rawMessage : t(`divers.${alert.messageKey}`, alert.params)
     }))
 })
 
 function removeToast(id) {
   alertsStore.removeAlert(id)
+}
+
+function toastClass(type) {
+  if (type === 'danger') return 'bg-red-900/95 border-red-500'
+  if (type === 'success') return 'bg-emerald-900/95 border-emerald-500'
+  if (type === 'info') return 'bg-sky-900/95 border-sky-500'
+  return 'bg-orange-900/95 border-orange-500'
+}
+
+function toastIcon(type) {
+  if (type === 'danger') return '●'
+  if (type === 'success') return '✓'
+  if (type === 'info') return 'ℹ'
+  return '▲'
 }
 </script>
 
