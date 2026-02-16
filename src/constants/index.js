@@ -23,7 +23,6 @@ export const DEFAULT_CONFIG = {
   stasis: 3,
   steles: 0,
   steleIntervention: 0,
-  isSteleArchi: false,
   isBooster: true,
   isModulated: true,
   minItemProfit: null,

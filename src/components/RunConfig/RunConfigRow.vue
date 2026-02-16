@@ -115,16 +115,6 @@
         </select>
       </div>
 
-       <!-- Stèle Archi -->
-      <div class="flex flex-col items-center justify-center w-12">
-        <input
-          type="checkbox"
-          :checked="run.isSteleArchi"
-          @change="updateField('isSteleArchi', $event.target.checked)"
-          class="custom-checkbox-small"
-        />
-      </div>
-
       <!-- Temps (minutes) -->
       <div class="flex justify-center w-12">
         <input 
