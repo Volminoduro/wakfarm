@@ -10234,6 +10234,8 @@
     "alert_blacklist_write": "Está bloqueado para escribir. No puede modificar precios. Contacte con la administración para más información.",
     "alert_blacklist_read": "Está bloqueado para la lectura de precios colectivos. No tiene acceso a los datos. Contacte con la administración para más información.",
     "alert_update_price_error": "Error al actualizar el precio. Por favor, inténtelo de nuevo.",
+    "prices_collective_info_equipment": "Si tu artículo es un equipo que puede ser ID o ya está ID: indicar el precio no ID",
+    "prices_collective_info_pet": "Si es un mascota, poner el precio nivel 0",
     "settings": {
         "launchOnStartup": "Iniciar la aplicación al arrancar Windows",
         "minimizeToTray": "Al cerrar (X), minimizar a la bandeja del sistema (iconos ocultos)"

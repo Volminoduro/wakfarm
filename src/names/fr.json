@@ -10265,6 +10265,8 @@
     "alert_blacklist_write": "Vous êtes bloqué en écriture. Vous ne pouvez pas modifier les prix. Contactez l'administration pour plus d'explications.",
     "alert_blacklist_read": "Vous êtes bloqué en lecture des prix collectifs. Vous n'avez pas accès aux données. Contactez l'administration pour plus d'explications.",
     "alert_update_price_error": "Erreur lors de la mise à jour du prix. Veuillez réessayer.",
+    "prices_collective_info_equipment": "Si votre item est un équipement qui peut être ID ou qui est déjà ID : indiquer le prix no ID",
+    "prices_collective_info_pet": "Si c'est un familier, mettre le prix niveau 0",
     "settings": {
         "launchOnStartup": "Lancer l'application au démarrage de Windows",
         "minimizeToTray": "Lors de la fermeture (croix), réduire dans la zone de notification (icônes cachées)"

@@ -10234,6 +10234,8 @@
     "alert_blacklist_write": "You are blocked from writing. You cannot modify prices. Contact administration for more information.",
     "alert_blacklist_read": "You are blocked from reading collective prices. You do not have access to data. Contact administration for more information.",
     "alert_update_price_error": "Error updating price. Please try again.",
+    "prices_collective_info_equipment": "If your item is equipment that can be ID or is already ID: indicate the no-ID price",
+    "prices_collective_info_pet": "If it's a pet, put the level 0 price",
     "settings": {
         "launchOnStartup": "Launch the application at Windows startup",
         "minimizeToTray": "On close (X), minimize to system tray (hidden icons)"
