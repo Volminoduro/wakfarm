@@ -102,9 +102,6 @@ function executeCommand() {
   command.value = ''
 }
 
-// Handle F12 to toggle console (now handled by parent)
-// Removed keyboard handler - parent component manages this
-
 onMounted(() => {
   console.log('Console overlay ready.')
 })

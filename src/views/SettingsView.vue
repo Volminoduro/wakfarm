@@ -42,7 +42,7 @@
           📋 Console (F12)
         </button>
       </div>
-      <p class="text-xs text-slate-400 mt-2">Press F12 or Ctrl+Shift+I to toggle console</p>
+      <p class="text-xs text-slate-400 mt-2">Press Ctrl+Shift+I to toggle console</p>
     </div>
   </div>
 </template>

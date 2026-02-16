@@ -78,7 +78,7 @@ onMounted(async () => {
 
   // Keyboard shortcut handler for dev overlays
   const handleKeydown = (e) => {
-    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.metaKey && e.altKey && e.key === 'i')) {
+    if ((e.ctrlKey && e.shiftKey && e.key === 'I') || (e.metaKey && e.altKey && e.key === 'i')) {
       e.preventDefault()
       devToolsStore.toggleConsole()
     }
