@@ -10236,6 +10236,7 @@
     "alert_update_price_error": "Erro ao atualizar o preço. Por favor, tente novamente.",
     "prices_collective_info_equipment": "Se o seu item é equipamento que pode ser ID ou já está ID: indicar o preço no ID",
     "prices_collective_info_pet": "Se é um pet, colocar o preço nível 0",
+    "prices_personal_info": "Se um item estiver presente nos preços pessoais e coletivos, o preço pessoal será usado com prioridade",
     "settings": {
         "launchOnStartup": "Iniciar o aplicativo na inicialização do Windows",
         "minimizeToTray": "Ao fechar (X), minimizar para a bandeja do sistema (ícones ocultos)"

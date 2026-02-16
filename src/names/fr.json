@@ -10267,6 +10267,7 @@
     "alert_update_price_error": "Erreur lors de la mise à jour du prix. Veuillez réessayer.",
     "prices_collective_info_equipment": "Si votre item est un équipement qui peut être ID ou qui est déjà ID : indiquer le prix no ID",
     "prices_collective_info_pet": "Si c'est un familier, mettre le prix niveau 0",
+    "prices_personal_info": "Si un objet est présent dans les prix personnels et collectifs, le prix personnel sera utilisé en priorité",
     "settings": {
         "launchOnStartup": "Lancer l'application au démarrage de Windows",
         "minimizeToTray": "Lors de la fermeture (croix), réduire dans la zone de notification (icônes cachées)"
