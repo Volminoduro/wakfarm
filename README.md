@@ -1,6 +1,11 @@
 # WakFarm - Calculateur de Rentabilité Wakfu
 
-Application desktop multi-plateforme pour calculer la rentabilité des donjons Wakfu avec partage des prix en temps réel.
+Application desktop **et web** pour calculer la rentabilité des donjons Wakfu avec partage des prix en temps réel.
+
+## 🌐 Accès
+
+- **Desktop** : Télécharger la dernière version dans [Releases](../../releases)
+- **Web** : [https://volminoduro.github.io/wakfarm/](https://volminoduro.github.io/wakfarm/)
 
 ## 🎯 Fonctionnalités
 
@@ -27,10 +32,11 @@ Application desktop multi-plateforme pour calculer la rentabilité des donjons W
 ### Prix collectifs
 ![Prix collectifs](doc/screenshots/priceCollectif.png)
 
-## Stack Technique
+## 📦 Stack Technique
 
 - **Frontend**: Vue 3 + Vite
-- **Desktop**: Tauri
+- **Desktop**: Tauri (Windows)
+- **Web**: GitHub Pages (déploiement statique)
 - **Données locales**: localStorage (config, prix perso)
 - **Données cloud**: Firebase Firestore (prix collectifs)
 - L'essentiel du code a été produit à l'aide de Copilot.

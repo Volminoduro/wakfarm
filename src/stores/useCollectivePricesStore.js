@@ -16,10 +16,10 @@ import {
   setPersistence,
   browserLocalPersistence
 } from 'firebase/auth'
-import { invoke } from '@tauri-apps/api/core'
 import { getVersion } from '@tauri-apps/api/app'
 import { useAlertsStore } from '@/stores/useAlertsStore'
 import { useJsonStore } from '@/stores/useJsonStore'
+import { getMachineId, getMachineIdSource, isRunningInTauri } from '@/utils/machineId'
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
@@ -69,6 +69,10 @@ function bumpPricesVersion() {
   }
 }
 
+function getClientPlatform() {
+  return isRunningInTauri() ? 'desktop' : 'web'
+}
+
 export const useCollectivePricesStore = defineStore('collectivePrices', {
   state: () => ({
     prices: {},
@@ -78,6 +82,7 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
     machineID: null,
     userID: null,
     appVersion: null,
+    machineIdSource: 'unknown',
     authError: null,
     isBlacklisted: false,
     blacklistType: null,
@@ -100,17 +105,31 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
 
       try {
         // Get machine ID to ensure consistent auth across builds
-        this.machineID = await invoke('get_machine_id')
+        // Works in both Tauri (hardware-based) and Web (IP-based)
+        this.machineID = await getMachineId()
+        this.machineIdSource = getMachineIdSource()
+        if (!this.machineID) {
+          console.warn('⚠️ No machine ID available, using fallback')
+        } else {
+          console.info(`✓ Machine ID obtained (${isRunningInTauri() ? 'Tauri' : 'Web'} mode, source: ${this.machineIdSource})`)
+        }
       } catch (err) {
-        console.error('❌ Failed to get machine ID:', err)
-        // Continue without machine ID (fallback to standard anonymous auth)
+        console.warn('⚠️ Could not get machine ID:', err)
+        this.machineID = null
+        this.machineIdSource = isRunningInTauri() ? 'desktop_hardware' : 'web_unknown'
       }
 
+      // Get app version
       try {
-        this.appVersion = await getVersion()
+        if (isRunningInTauri()) {
+          this.appVersion = await getVersion()
+        } else {
+          // For web version, use package.json version or a default
+          this.appVersion = import.meta.env.VITE_APP_VERSION || 'web'
+        }
       } catch (err) {
         console.warn('⚠️ Could not get app version:', err)
-        this.appVersion = null
+        this.appVersion = isRunningInTauri() ? null : 'web'
       }
 
       // Configure Firebase Auth persistence
@@ -164,10 +183,14 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
       if (!this.userID || !this.machineID || !db) return
 
       try {
+        const clientPlatform = getClientPlatform()
+        const machineIdSource = this.machineIdSource || (isRunningInTauri() ? 'desktop_hardware' : 'web_unknown')
         await setDoc(
           doc(db, 'client_ids', this.userID),
           {
             machineID: this.machineID,
+            clientPlatform,
+            machineIdSource,
             appVersion: this.appVersion || 'unknown',
             updatedAt: Date.now()
           },
@@ -182,6 +205,8 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
       if (!this.machineID || !db) return
 
       try {
+        const clientPlatform = getClientPlatform()
+        const machineIdSource = this.machineIdSource || (isRunningInTauri() ? 'desktop_hardware' : 'web_unknown')
         // Use machine ID for whitelist/blacklist to ensure consistency
         const snap = await getDoc(doc(db, 'allowlist', this.machineID))
         this.isAllowlisted = snap.exists()
@@ -189,6 +214,8 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
         if (!snap.exists()) {
           await setDoc(doc(db, 'allowlist', this.machineID), {
             createdAt: Date.now(),
+            clientPlatform,
+            machineIdSource,
             appVersion: this.appVersion || 'unknown',
             firebaseUID: this.userID // Store Firebase UID for reference
           })

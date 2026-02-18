@@ -111,8 +111,11 @@ fn enable_autostart() -> Result<(), String> {
         let run_key = RegKey::predef(HKEY_CURRENT_USER)
             .open_subkey_with_flags("Software\\Microsoft\\Windows\\CurrentVersion\\Run", winreg::enums::KEY_WRITE)
             .map_err(|e| format!("Error opening registry: {}", e))?;
-        
-        run_key.set_value("Wakfarm", &app_path.to_string_lossy().to_string())
+
+        // Quote path and add --hidden so startup doesn't show the window (prevents console/white screen)
+        let run_value = format!("\"{}\" --hidden", app_path.to_string_lossy());
+
+        run_key.set_value("Wakfarm", &run_value)
             .map_err(|e| format!("Error writing registry: {}", e))?;
         Ok(())
     }
@@ -231,9 +234,12 @@ pub fn run() {
                 )?;
             }
 
-            // Show window
-            if let Some(window) = app.get_webview_window("main") {
-                let _ = window.show();
+            // Show window unless started with --hidden (used for autostart)
+            let hide_on_start = std::env::args().any(|a| a == "--hidden");
+            if !hide_on_start {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.show();
+                }
             }
 
             // Create tray icon menu
