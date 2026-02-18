@@ -16,7 +16,7 @@
     
     <div 
       v-if="isOpen"
-      class="absolute z-50 mt-1 w-full rounded shadow-lg cf-card max-h-75 overflow-y-auto">
+      class="absolute z-50 mt-1 w-full rounded shadow-lg cf-card overflow-visible">
       <div class="p-2">
         <button 
           @click="toggleAll"
