@@ -22,6 +22,6 @@ export default defineConfig({
   server: {
     port: 8080
   },
-  // GitHub Pages deployment config (uncomment and adjust if needed)
-  // base: '/wakfarm/',
+  // GitHub Pages deployment config
+  base: '/wakfarm/',
 })
