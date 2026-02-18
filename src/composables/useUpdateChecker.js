@@ -1,6 +1,7 @@
 import { useI18n } from 'vue-i18n'
 import { invoke } from '@tauri-apps/api/core'
 import { getVersion } from '@tauri-apps/api/app'
+import { isRunningInTauri } from '@/utils/machineId'
 import { confirm, message } from '@tauri-apps/plugin-dialog'
 
 const UPDATE_CACHE_KEY = 'update:cache'
@@ -88,6 +89,12 @@ export function useUpdateChecker({ repo, minIntervalMs = DEFAULT_MIN_INTERVAL_MS
     console.log('[Update] Detected platform:', platform)
     if (!platform) {
       console.log('[Update] Skipped: unknown platform')
+      return
+    }
+
+    // Only check for updates on desktop/Tauri
+    if (!isRunningInTauri()) {
+      console.log('[Update] Skipped: only runs on Tauri (desktop)')
       return
     }
 

@@ -14,34 +14,29 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { getVersion } from '@tauri-apps/api/app'
+import { isRunningInTauri } from '@/utils/machineId'
 
 const version = ref('')
 
 onMounted(async () => {
-  try {
-    // Try to get version from Tauri directly (don't check __TAURI__)
-    const ver = await getVersion()
-    if (ver) {
-      version.value = ver
-      console.log('Footer: Got version from Tauri:', ver)
-      return
+  // Only try Tauri if running in Tauri
+  if (isRunningInTauri()) {
+    try {
+      const ver = await getVersion()
+      if (ver) {
+        version.value = ver
+        console.log('Footer: Got version from Tauri:', ver)
+        return
+      }
+    } catch (error) {
+      console.log('Footer: Tauri getVersion failed:', error.message)
     }
-  } catch (error) {
-    console.log('Footer: Tauri getVersion failed:', error.message)
   }
   
-  // Fallback to fetching package.json
-  try {
-    const response = await fetch('/package.json')
-    if (response.ok) {
-      const pkg = await response.json()
-      if (pkg.version) {
-        version.value = pkg.version
-        console.log('Footer: Got version from package.json:', pkg.version)
-      }
-    }
-  } catch (error) {
-    console.error('Footer: Failed to get version from package.json:', error)
+  // Fallback to build-time version (from vite.config.js define)
+  if (import.meta.env.VITE_APP_VERSION) {
+    version.value = import.meta.env.VITE_APP_VERSION
+    console.log('Footer: Got version from build:', import.meta.env.VITE_APP_VERSION)
   }
 })
 </script>

@@ -869,7 +869,7 @@ function onUpdatePrice({ itemId, newPrice, tabType }) {
 
 // Clear handlers
 function clearAllPersonalPrices() {
-  if (confirm(t('divers.confirm_clear_personal_prices') || 'Are you sure?')) {
+  if (confirm(t('divers.prices_clear_personal_confirm') || 'Are you sure?')) {
     personalPricesStore.clearAll()
   }
 }
