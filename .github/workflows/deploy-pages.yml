@@ -3,9 +3,8 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]  # Deploy only from main branch
     tags:
-      - 'v*'  # Also deploy on version tags (e.g., v0.1.6)
+      - 'v*'  # Deploy only on version tags (e.g., v0.1.6)
   workflow_dispatch:  # Allow manual trigger
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
