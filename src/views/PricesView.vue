@@ -156,7 +156,22 @@
                   </button>
                 </div>
 
-                <p class="text-xs uppercase tracking-wide cf-text-secondary mt-1 mb-1">{{ $t('divers.prices_sources_group_jobs') || 'Métiers' }}</p>
+                <div class="border-t border-slate-600 my-2"></div>
+
+                <p class="text-xs uppercase tracking-wide cf-text-secondary mt-2 mb-1">{{ $t('divers.prices_sources_group_jobs') || 'Métiers' }}</p>
+
+                <div class="flex gap-2 mb-2">
+                  <button 
+                    @click="toggleAllJobsSourcesPersonal(true)"
+                    class="cf-dropdown-action text-xs">
+                    {{ $t('divers.level_ranges_toggle_all') }}
+                  </button>
+                  <button 
+                    @click="toggleAllJobsSourcesPersonal(false)"
+                    class="cf-dropdown-action text-xs">
+                    {{ $t('divers.level_ranges_toggle_none') }}
+                  </button>
+                </div>
 
                 <label 
                   v-for="job in filteredJobSourcesPersonal" 
@@ -174,6 +189,19 @@
                 </label>
 
                 <p class="text-xs uppercase tracking-wide cf-text-secondary mt-2 mb-1">{{ $t('divers.prices_sources_group_instances') || 'Instances' }}</p>
+                
+                <div class="flex gap-2 mb-2">
+                  <button 
+                    @click="toggleAllInstancesSourcesPersonal(true)"
+                    class="cf-dropdown-action text-xs">
+                    {{ $t('divers.level_ranges_toggle_all') }}
+                  </button>
+                  <button 
+                    @click="toggleAllInstancesSourcesPersonal(false)"
+                    class="cf-dropdown-action text-xs">
+                    {{ $t('divers.level_ranges_toggle_none') }}
+                  </button>
+                </div>
                 
                 <label 
                   v-for="inst in filteredInstanceSourcesPersonal" 
@@ -377,7 +405,22 @@
                   </button>
                 </div>
 
-                <p class="text-xs uppercase tracking-wide cf-text-secondary mt-1 mb-1">{{ $t('divers.prices_sources_group_jobs') || 'Métiers' }}</p>
+                <div class="border-t border-slate-600 my-2"></div>
+
+                <p class="text-xs uppercase tracking-wide cf-text-secondary mt-2 mb-1">{{ $t('divers.prices_sources_group_jobs') || 'Métiers' }}</p>
+
+                <div class="flex gap-2 mb-2">
+                  <button 
+                    @click="toggleAllJobsSourcesCollective(true)"
+                    class="cf-dropdown-action text-xs">
+                    {{ $t('divers.level_ranges_toggle_all') }}
+                  </button>
+                  <button 
+                    @click="toggleAllJobsSourcesCollective(false)"
+                    class="cf-dropdown-action text-xs">
+                    {{ $t('divers.level_ranges_toggle_none') }}
+                  </button>
+                </div>
 
                 <label 
                   v-for="job in filteredJobSourcesCollective" 
@@ -395,6 +438,19 @@
                 </label>
 
                 <p class="text-xs uppercase tracking-wide cf-text-secondary mt-2 mb-1">{{ $t('divers.prices_sources_group_instances') || 'Instances' }}</p>
+                
+                <div class="flex gap-2 mb-2">
+                  <button 
+                    @click="toggleAllInstancesSourcesCollective(true)"
+                    class="cf-dropdown-action text-xs">
+                    {{ $t('divers.level_ranges_toggle_all') }}
+                  </button>
+                  <button 
+                    @click="toggleAllInstancesSourcesCollective(false)"
+                    class="cf-dropdown-action text-xs">
+                    {{ $t('divers.level_ranges_toggle_none') }}
+                  </button>
+                </div>
                 
                 <label 
                   v-for="inst in filteredInstanceSourcesCollective" 
@@ -947,6 +1003,26 @@ function toggleAllSourcesPersonal(value) {
   }
 }
 
+function toggleAllInstancesSourcesPersonal(value) {
+  const instanceSourceIds = allSourcesList.value.instances.map(source => source.sourceId)
+  if (value) {
+    const existingJobs = filterSourcesPersonal.value.filter(id => id.startsWith('job:'))
+    filterSourcesPersonal.value = [...existingJobs, ...instanceSourceIds]
+  } else {
+    filterSourcesPersonal.value = filterSourcesPersonal.value.filter(id => id.startsWith('job:'))
+  }
+}
+
+function toggleAllJobsSourcesPersonal(value) {
+  const jobSourceIds = allSourcesList.value.jobs.map(source => source.sourceId)
+  if (value) {
+    const existingInstances = filterSourcesPersonal.value.filter(id => id.startsWith('instance:'))
+    filterSourcesPersonal.value = [...existingInstances, ...jobSourceIds]
+  } else {
+    filterSourcesPersonal.value = filterSourcesPersonal.value.filter(id => id.startsWith('instance:'))
+  }
+}
+
 function toggleSourceCollective(sourceId) {
   if (filterSourcesCollective.value.includes(sourceId)) {
     filterSourcesCollective.value = filterSourcesCollective.value.filter(id => id !== sourceId)
@@ -960,6 +1036,26 @@ function toggleAllSourcesCollective(value) {
     filterSourcesCollective.value = allSourcesList.value.flat.map(source => source.sourceId)
   } else {
     filterSourcesCollective.value = []
+  }
+}
+
+function toggleAllInstancesSourcesCollective(value) {
+  const instanceSourceIds = allSourcesList.value.instances.map(source => source.sourceId)
+  if (value) {
+    const existingJobs = filterSourcesCollective.value.filter(id => id.startsWith('job:'))
+    filterSourcesCollective.value = [...existingJobs, ...instanceSourceIds]
+  } else {
+    filterSourcesCollective.value = filterSourcesCollective.value.filter(id => id.startsWith('job:'))
+  }
+}
+
+function toggleAllJobsSourcesCollective(value) {
+  const jobSourceIds = allSourcesList.value.jobs.map(source => source.sourceId)
+  if (value) {
+    const existingInstances = filterSourcesCollective.value.filter(id => id.startsWith('instance:'))
+    filterSourcesCollective.value = [...existingInstances, ...jobSourceIds]
+  } else {
+    filterSourcesCollective.value = filterSourcesCollective.value.filter(id => id.startsWith('instance:'))
   }
 }
 
