@@ -9,7 +9,7 @@ Application desktop **et web** pour calculer la rentabilité des donjons Wakfu a
 
 ## 🎯 Fonctionnalités
 
-- **Calcul de rentabilité** par donjon/instance
+- **Calcul de rentabilité** par donjon/instance, métier de récolte
 - **Deux types de prix**:
   - 💾 Prix personnels (localStorage, local uniquement)
   - ☁️ Prix collectifs (Firestore, temps réel, communauté)
