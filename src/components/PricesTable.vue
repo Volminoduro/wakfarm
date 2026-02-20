@@ -24,10 +24,10 @@
                   <span class="inline-block w-3 text-center">{{ sortColumn === 'level' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
                 </div>
               </th>
-              <th @click="sortBy('instances')" :class="['cf-table-header','cf-table-header--hover']">
+              <th @click="sortBy('sources')" :class="['cf-table-header','cf-table-header--hover']">
                 <div class="flex items-center gap-2">
-                  {{ $t('divers.prices_col_instances') }}
-                  <span class="inline-block w-3 text-center">{{ sortColumn === 'instances' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
+                  {{ $t('divers.prices_col_sources') || $t('divers.prices_col_instances') }}
+                  <span class="inline-block w-3 text-center">{{ sortColumn === 'sources' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
                 </div>
               </th>
               <th @click="sortBy('price')" :class="['cf-table-header','cf-table-header--hover','text-right']">
@@ -50,8 +50,8 @@
               </td>
               <td class="px-4 py-3 text-slate-200">{{ item.level }}</td>
               <td class="px-4 py-3 cf-text-secondary">
-                <span v-if="item.instances && item.instances.length > 0" class="text-sm">
-                  {{ item.instances.join(', ') }}
+                <span v-if="item.sources && item.sources.length > 0" class="text-sm">
+                  {{ item.sources.join(', ') }}
                 </span>
                 <span v-else class="text-slate-400">—</span>
               </td>
@@ -91,15 +91,15 @@
             🗑️ {{ $t('divers.prices_clear_personal') }}
           </button>
           
-          <button @click="currentPage = 1" :disabled="currentPage === 1" :class="['cf-pag-btn', currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '']">««</button>
-          <button @click="currentPage--" :disabled="currentPage === 1" :class="['cf-pag-btn', currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '']">‹</button>
+          <button @click="goToFirstPage" :disabled="currentPage === 1" :class="['cf-pag-btn', currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '']">««</button>
+          <button @click="goToPreviousPage" :disabled="currentPage === 1" :class="['cf-pag-btn', currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '']">‹</button>
           
           <span class="px-4 text-sm text-slate-200">
             {{ $t('divers.prices_page') }} {{ currentPage }} / {{ totalPages }}
           </span>
           
-          <button @click="currentPage++" :disabled="currentPage === totalPages" :class="['cf-pag-btn', currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : '']">›</button>
-          <button @click="currentPage = totalPages" :disabled="currentPage === totalPages" :class="['cf-pag-btn', currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : '']">»»</button>
+          <button @click="goToNextPage" :disabled="currentPage === totalPages" :class="['cf-pag-btn', currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : '']">›</button>
+          <button @click="goToLastPage" :disabled="currentPage === totalPages" :class="['cf-pag-btn', currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : '']">»»</button>
         </div>
       </div>
     </div>
@@ -147,7 +147,7 @@ const props = defineProps({
     type: [String, Number],
     default: ''
   },
-  filterInstances: {
+  filterSources: {
     type: Array,
     default: () => []
   },
@@ -236,13 +236,13 @@ const filteredAndSortedItems = computed(() => {
     result = result.filter(item => item.level <= props.filterLevelMax)
   }
   
-  // Filter by instances
-  const fi = props.filterInstances || []
+  // Filter by sources
+  const fi = props.filterSources || []
   if (fi.length === 0) {
     result = []
-  } else if (fi.length < 100) { // Assuming max ~100 instances
+  } else if (fi.length < 400) { // Sources include instances + jobs
     result = result.filter(item => {
-      return item.instanceIds.some(instId => fi.includes(instId))
+      return (item.sourceIds || []).some(sourceId => fi.includes(sourceId))
     })
   }
   
@@ -251,9 +251,9 @@ const filteredAndSortedItems = computed(() => {
     let aVal = a[props.sortColumn]
     let bVal = b[props.sortColumn]
     
-    if (props.sortColumn === 'instances') {
-      aVal = a.instanceIds?.length || 0
-      bVal = b.instanceIds?.length || 0
+    if (props.sortColumn === 'sources') {
+      aVal = a.sourceIds?.length || 0
+      bVal = b.sourceIds?.length || 0
     } else if (props.sortColumn === 'price') {
       aVal = aVal ?? -1
       bVal = bVal ?? -1
@@ -316,5 +316,29 @@ function onPriceBlur(itemId, event) {
 
 function onClearAll() {
   emit('clear-all')
+}
+
+function setPage(page) {
+  const total = Math.max(1, Number(totalPages.value) || 1)
+  const nextPage = Math.min(total, Math.max(1, Number(page) || 1))
+  if (nextPage !== props.currentPage) {
+    emit('update:currentPage', nextPage)
+  }
+}
+
+function goToFirstPage() {
+  setPage(1)
+}
+
+function goToPreviousPage() {
+  setPage(props.currentPage - 1)
+}
+
+function goToNextPage() {
+  setPage(props.currentPage + 1)
+}
+
+function goToLastPage() {
+  setPage(totalPages.value)
 }
 </script>

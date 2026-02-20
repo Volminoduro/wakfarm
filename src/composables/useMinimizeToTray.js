@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { getCurrentWindow } from '@tauri-apps/api/window'
+import { isTauriAvailable } from '@/utils/tauriHelper'
 
 export function useMinimizeToTray() {
   const isMinimizedToTray = ref(false)
@@ -8,6 +9,11 @@ export function useMinimizeToTray() {
   let unlistenResize = null
 
   const minimizeToTray = async () => {
+    if (!isTauriAvailable()) {
+      console.warn('Tauri not available - cannot minimize to tray')
+      return false
+    }
+
     try {
       isLoading.value = true
       await invoke('hide_window')
@@ -22,6 +28,11 @@ export function useMinimizeToTray() {
   }
 
   const showFromTray = async () => {
+    if (!isTauriAvailable()) {
+      console.warn('Tauri not available - cannot show from tray')
+      return false
+    }
+
     try {
       isLoading.value = true
       await invoke('show_window')
@@ -36,6 +47,10 @@ export function useMinimizeToTray() {
   }
 
   const setupCloseToTray = async (minimizeToTrayEnabled) => {
+    if (!isTauriAvailable()) {
+      return
+    }
+
     const window = getCurrentWindow()
 
     if (unlistenResize) {

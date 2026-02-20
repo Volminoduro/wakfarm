@@ -16,6 +16,7 @@ export const useJsonStore = defineStore('data', {
     _rawMapping: [],
     _rawLoots: [],
     _bossMapping: {},
+    rawHarvestResources: [],
     _hasConfigWatcher: false,
     instancesBase: []
   }),
@@ -33,11 +34,17 @@ export const useJsonStore = defineStore('data', {
     itemToInstancesMap() {
       const loots = Array.isArray(this._rawLoots) ? this._rawLoots : []
       const mapping = Array.isArray(this._rawMapping) ? this._rawMapping : []
+      const activeInstanceIds = new Set(
+        (Array.isArray(this.rawInstances) ? this.rawInstances : [])
+          .filter(instance => instance?.isActive !== false)
+          .map(instance => instance.id)
+      )
 
       if (loots.length === 0 || mapping.length === 0) return {}
 
       const monsterToInstances = new Map()
       mapping.forEach(m => {
+        if (!activeInstanceIds.has(m.instanceId)) return
         const monsters = Array.isArray(m && m.monsters) ? m.monsters : []
         monsters.forEach(monster => {
           const existing = monsterToInstances.get(monster.monsterId) || []
@@ -130,16 +137,22 @@ export const useJsonStore = defineStore('data', {
         
         // Load remaining data in background (Phase 2)
         try {
-          const [mappingRes, lootRes, serversRes, bossMappingRes] = await Promise.all([
+          const [mappingRes, lootRes, serversRes, bossMappingRes, harvestResourcesRes] = await Promise.all([
             axios.get(`${basePath}data/mapping.json`),
             axios.get(`${basePath}data/loots.json`),
             axios.get(`${basePath}data/servers.json`),
-            axios.get(`${basePath}data/boss-mapping.json`)
+            axios.get(`${basePath}data/boss-mapping.json`),
+            axios.get(`${basePath}data/harvest.json`)
+              .catch(() => axios.get(`${basePath}data/harvest-resources.json`))
+              .catch(() => ({ data: { resources: [] } }))
           ])
           this.servers = serversRes.data || []
           this._rawMapping = mappingRes.data
           this._rawLoots = lootRes.data
           this._bossMapping = bossMappingRes.data
+          this.rawHarvestResources = Array.isArray(harvestResourcesRes.data?.resources)
+            ? harvestResourcesRes.data.resources
+            : []
           
           this.rawInstances = this.rawInstances.map(inst => ({
             ...inst,

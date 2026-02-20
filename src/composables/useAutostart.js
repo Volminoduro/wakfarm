@@ -1,11 +1,16 @@
 import { ref, onMounted } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
+import { isTauriAvailable } from '@/utils/tauriHelper'
 
 export function useAutostart() {
   const isAutostartEnabled = ref(false)
   const isLoading = ref(false)
 
   const checkAutostartStatus = async () => {
+    if (!isTauriAvailable()) {
+      return false
+    }
+
     try {
       isLoading.value = true
       const enabled = await invoke('is_autostart_enabled')
@@ -20,6 +25,11 @@ export function useAutostart() {
   }
 
   const enableAutostart = async () => {
+    if (!isTauriAvailable()) {
+      console.warn('Tauri not available - cannot enable autostart')
+      return false
+    }
+
     try {
       isLoading.value = true
       await invoke('enable_autostart')
@@ -34,6 +44,11 @@ export function useAutostart() {
   }
 
   const disableAutostart = async () => {
+    if (!isTauriAvailable()) {
+      console.warn('Tauri not available - cannot disable autostart')
+      return false
+    }
+
     try {
       isLoading.value = true
       await invoke('disable_autostart')

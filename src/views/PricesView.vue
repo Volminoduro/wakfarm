@@ -123,13 +123,13 @@
             </div>
           </div>
           
-          <!-- Filter by instances -->
+          <!-- Filter by sources -->
           <div class="relative" ref="instancesDropdownRefPersonal">
-            <label class="block text-sm font-medium mb-2 cf-text-secondary">{{ $t('divers.prices_filter_instances') }}</label>
+            <label class="block text-sm font-medium mb-2 cf-text-secondary">{{ $t('divers.prices_filter_sources') || $t('divers.prices_filter_instances') }}</label>
             <button
               @click="isInstancesDropdownOpenPersonal = !isInstancesDropdownOpenPersonal"
               class="cf-select min-w-40 w-auto text-left flex items-center justify-between font-mono">
-              <span>{{ getInstancesDisplayTextPersonal() }}</span>
+              <span>{{ getSourcesDisplayTextPersonal() }}</span>
               <span>{{ isInstancesDropdownOpenPersonal ? '▲' : '▼' }}</span>
             </button>
             
@@ -137,7 +137,7 @@
               class="cf-dropdown">
               <div class="p-2 space-y-1">
                 <input
-                  v-model="instanceSearchPersonal"
+                  v-model="sourceSearchPersonal"
                   type="text"
                   :placeholder="$t('divers.search_placeholder') || 'Rechercher...'"
                   class="cf-input w-full px-3 py-1.5 mb-2 text-sm"
@@ -145,29 +145,48 @@
                 />
                 <div class="flex gap-2 mb-2 pb-2">
                   <button 
-                    @click="toggleAllInstancesPersonal(true)"
+                    @click="toggleAllSourcesPersonal(true)"
                     class="cf-dropdown-action">
                     {{ $t('divers.level_ranges_toggle_all') }}
                   </button>
                   <button 
-                    @click="toggleAllInstancesPersonal(false)"
+                    @click="toggleAllSourcesPersonal(false)"
                     class="cf-dropdown-action">
                     {{ $t('divers.level_ranges_toggle_none') }}
                   </button>
                 </div>
-                
+
+                <p class="text-xs uppercase tracking-wide cf-text-secondary mt-1 mb-1">{{ $t('divers.prices_sources_group_jobs') || 'Métiers' }}</p>
+
                 <label 
-                  v-for="inst in filteredInstancesListPersonal" 
-                  :key="inst.id"
+                  v-for="job in filteredJobSourcesPersonal" 
+                  :key="job.sourceId"
                   class="cf-dropdown-item">
                   <input
                     type="checkbox"
-                    :checked="filterInstancesPersonal.includes(inst.id)"
-                    @change="toggleInstancePersonal(inst.id)"
+                    :checked="filterSourcesPersonal.includes(job.sourceId)"
+                    @change="toggleSourcePersonal(job.sourceId)"
                     class="custom-checkbox-small"
                   />
                   <span class="text-slate-200">
-                    {{ $t("instances." + inst.id) }}
+                    {{ job.name }}
+                  </span>
+                </label>
+
+                <p class="text-xs uppercase tracking-wide cf-text-secondary mt-2 mb-1">{{ $t('divers.prices_sources_group_instances') || 'Instances' }}</p>
+                
+                <label 
+                  v-for="inst in filteredInstanceSourcesPersonal" 
+                  :key="inst.sourceId"
+                  class="cf-dropdown-item">
+                  <input
+                    type="checkbox"
+                    :checked="filterSourcesPersonal.includes(inst.sourceId)"
+                    @change="toggleSourcePersonal(inst.sourceId)"
+                    class="custom-checkbox-small"
+                  />
+                  <span class="text-slate-200">
+                    {{ inst.name }}
                   </span>
                 </label>
               </div>
@@ -208,7 +227,7 @@
         :filter-rarities="filterRaritiesPersonal"
         :filter-level-min="filterLevelMinPersonal"
         :filter-level-max="filterLevelMaxPersonal"
-        :filter-instances="filterInstancesPersonal"
+        :filter-sources="filterSourcesPersonal"
         :sort-column="sortColumnPersonal"
         :sort-direction="sortDirectionPersonal"
         :current-page="currentPagePersonal"
@@ -325,13 +344,13 @@
             </div>
           </div>
           
-          <!-- Filter by instances -->
+          <!-- Filter by sources -->
           <div class="relative" ref="instancesDropdownRefCollective">
-            <label class="block text-sm font-medium mb-2 cf-text-secondary">{{ $t('divers.prices_filter_instances') }}</label>
+            <label class="block text-sm font-medium mb-2 cf-text-secondary">{{ $t('divers.prices_filter_sources') || $t('divers.prices_filter_instances') }}</label>
             <button
               @click="isInstancesDropdownOpenCollective = !isInstancesDropdownOpenCollective"
               class="cf-select min-w-40 w-auto text-left flex items-center justify-between font-mono">
-              <span>{{ getInstancesDisplayTextCollective() }}</span>
+              <span>{{ getSourcesDisplayTextCollective() }}</span>
               <span>{{ isInstancesDropdownOpenCollective ? '▲' : '▼' }}</span>
             </button>
             
@@ -339,7 +358,7 @@
               class="cf-dropdown">
               <div class="p-2 space-y-1">
                 <input
-                  v-model="instanceSearchCollective"
+                  v-model="sourceSearchCollective"
                   type="text"
                   :placeholder="$t('divers.search_placeholder') || 'Rechercher...'"
                   class="cf-input w-full px-3 py-1.5 mb-2 text-sm"
@@ -347,29 +366,48 @@
                 />
                 <div class="flex gap-2 mb-2 pb-2">
                   <button 
-                    @click="toggleAllInstancesCollective(true)"
+                    @click="toggleAllSourcesCollective(true)"
                     class="cf-dropdown-action">
                     {{ $t('divers.level_ranges_toggle_all') }}
                   </button>
                   <button 
-                    @click="toggleAllInstancesCollective(false)"
+                    @click="toggleAllSourcesCollective(false)"
                     class="cf-dropdown-action">
                     {{ $t('divers.level_ranges_toggle_none') }}
                   </button>
                 </div>
-                
+
+                <p class="text-xs uppercase tracking-wide cf-text-secondary mt-1 mb-1">{{ $t('divers.prices_sources_group_jobs') || 'Métiers' }}</p>
+
                 <label 
-                  v-for="inst in filteredInstancesListCollective" 
-                  :key="inst.id"
+                  v-for="job in filteredJobSourcesCollective" 
+                  :key="job.sourceId"
                   class="cf-dropdown-item">
                   <input
                     type="checkbox"
-                    :checked="filterInstancesCollective.includes(inst.id)"
-                    @change="toggleInstanceCollective(inst.id)"
+                    :checked="filterSourcesCollective.includes(job.sourceId)"
+                    @change="toggleSourceCollective(job.sourceId)"
                     class="custom-checkbox-small"
                   />
                   <span class="text-slate-200">
-                    {{ $t("instances." + inst.id) }}
+                    {{ job.name }}
+                  </span>
+                </label>
+
+                <p class="text-xs uppercase tracking-wide cf-text-secondary mt-2 mb-1">{{ $t('divers.prices_sources_group_instances') || 'Instances' }}</p>
+                
+                <label 
+                  v-for="inst in filteredInstanceSourcesCollective" 
+                  :key="inst.sourceId"
+                  class="cf-dropdown-item">
+                  <input
+                    type="checkbox"
+                    :checked="filterSourcesCollective.includes(inst.sourceId)"
+                    @change="toggleSourceCollective(inst.sourceId)"
+                    class="custom-checkbox-small"
+                  />
+                  <span class="text-slate-200">
+                    {{ inst.name }}
                   </span>
                 </label>
               </div>
@@ -411,7 +449,7 @@
         :filter-rarities="filterRaritiesCollective"
         :filter-level-min="filterLevelMinCollective"
         :filter-level-max="filterLevelMaxCollective"
-        :filter-instances="filterInstancesCollective"
+        :filter-sources="filterSourcesCollective"
         :sort-column="sortColumnCollective"
         :sort-direction="sortDirectionCollective"
         :current-page="currentPageCollective"
@@ -464,6 +502,13 @@ function getCachedInstanceName(instanceId) {
   return instanceTranslationCache.get(instanceId)
 }
 
+function getHarvestJobName(skillId) {
+  const key = `divers.harvest_job_skill_${skillId}`
+  const translated = t(key)
+  if (translated && translated !== key) return translated
+  return `${t('divers.harvest_jobs_tab') || 'Métier'} #${skillId}`
+}
+
 // Active tab state
 const activeTab = useLocalStorage(LS_KEYS.PRICES_ACTIVE_TAB, 'personal')
 
@@ -490,13 +535,13 @@ const { elementRef: rarityDropdownRefPersonal } = useClickOutside(() => {
   isRarityDropdownOpenPersonal.value = false
 })
 
-const filterInstancesPersonal = useLocalStorage(LS_KEYS.PRICES_PERSONAL_INSTANCES, [], { deep: true })
+const filterSourcesPersonal = useLocalStorage(LS_KEYS.PRICES_PERSONAL_INSTANCES, [], { deep: true })
 
 const isInstancesDropdownOpenPersonal = ref(false)
 const { elementRef: instancesDropdownRefPersonal } = useClickOutside(() => {
   isInstancesDropdownOpenPersonal.value = false
 })
-const instanceSearchPersonal = ref('')
+const sourceSearchPersonal = ref('')
 
 // ========================================
 // COLLECTIVE TAB STATE
@@ -521,13 +566,16 @@ const { elementRef: rarityDropdownRefCollective } = useClickOutside(() => {
   isRarityDropdownOpenCollective.value = false
 })
 
-const filterInstancesCollective = useLocalStorage(LS_KEYS.PRICES_COLLECTIVE_INSTANCES, [], { deep: true })
+const filterSourcesCollective = useLocalStorage(LS_KEYS.PRICES_COLLECTIVE_INSTANCES, [], { deep: true })
 
 const isInstancesDropdownOpenCollective = ref(false)
 const { elementRef: instancesDropdownRefCollective } = useClickOutside(() => {
   isInstancesDropdownOpenCollective.value = false
 })
-const instanceSearchCollective = ref('')
+const sourceSearchCollective = ref('')
+
+if (sortColumnPersonal.value === 'instances') sortColumnPersonal.value = 'sources'
+if (sortColumnCollective.value === 'instances') sortColumnCollective.value = 'sources'
 
 // ========================================
 // SHARED COMPUTED
@@ -539,54 +587,101 @@ const allInstancesList = computed(() => {
     .filter(inst => inst.isActive !== false)
     .map(inst => ({
       id: inst.id,
+      sourceId: `instance:${inst.id}`,
+      type: 'instance',
       name: getCachedInstanceName(inst.id)
     }))
     .sort((a, b) => a.name.localeCompare(b.name))
 })
 
-const filteredInstancesListPersonal = computed(() => {
-  if (!instanceSearchPersonal.value) return allInstancesList.value
-  const search = instanceSearchPersonal.value.toLowerCase()
-  return allInstancesList.value.filter(inst => inst.name.toLowerCase().includes(search))
+const allHarvestJobsList = computed(() => {
+  const raw = Array.isArray(jsonStore.rawHarvestResources) ? jsonStore.rawHarvestResources : []
+  const uniqueSkillIds = [...new Set(raw.map(resource => Number(resource.jobSkillId)).filter(id => Number.isFinite(id) && id > 0))]
+
+  return uniqueSkillIds
+    .map(skillId => ({
+      id: skillId,
+      sourceId: `job:${skillId}`,
+      type: 'job',
+      name: getHarvestJobName(skillId)
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name))
 })
 
-const filteredInstancesListCollective = computed(() => {
-  if (!instanceSearchCollective.value) return allInstancesList.value
-  const search = instanceSearchCollective.value.toLowerCase()
-  return allInstancesList.value.filter(inst => inst.name.toLowerCase().includes(search))
+const allSourcesList = computed(() => {
+  const instances = allInstancesList.value
+  const jobs = allHarvestJobsList.value
+  return {
+    instances,
+    jobs,
+    flat: [...jobs, ...instances]
+  }
 })
+
+const filteredInstanceSourcesPersonal = computed(() => {
+  if (!sourceSearchPersonal.value) return allSourcesList.value.instances
+  const search = sourceSearchPersonal.value.toLowerCase()
+  return allSourcesList.value.instances.filter(source => source.name.toLowerCase().includes(search))
+})
+
+const filteredJobSourcesPersonal = computed(() => {
+  if (!sourceSearchPersonal.value) return allSourcesList.value.jobs
+  const search = sourceSearchPersonal.value.toLowerCase()
+  return allSourcesList.value.jobs.filter(source => source.name.toLowerCase().includes(search))
+})
+
+const filteredInstanceSourcesCollective = computed(() => {
+  if (!sourceSearchCollective.value) return allSourcesList.value.instances
+  const search = sourceSearchCollective.value.toLowerCase()
+  return allSourcesList.value.instances.filter(source => source.name.toLowerCase().includes(search))
+})
+
+const filteredJobSourcesCollective = computed(() => {
+  if (!sourceSearchCollective.value) return allSourcesList.value.jobs
+  const search = sourceSearchCollective.value.toLowerCase()
+  return allSourcesList.value.jobs.filter(source => source.name.toLowerCase().includes(search))
+})
+
+function normalizeStoredSourceIds(storedIds, availableSources) {
+  const sourceIdSet = new Set((availableSources || []).map(source => source.sourceId))
+  const normalized = (storedIds || []).map((id) => {
+    if (typeof id === 'number') return `instance:${id}`
+    if (typeof id === 'string') {
+      if (sourceIdSet.has(id)) return id
+      if (/^\d+$/.test(id)) return `instance:${id}`
+      if (/^(instance|job):\d+$/.test(id)) return id
+    }
+    return null
+  }).filter(Boolean)
+
+  return [...new Set(normalized)]
+}
 
 function hasStoredFilter(key) {
   if (typeof localStorage === 'undefined') return false
   return localStorage.getItem(key) !== null
 }
 
-watch(allInstancesList, (newList) => {
-  if (newList.length === 0) return
+watch(allSourcesList, (newSources) => {
+  if (newSources.flat.length === 0) return
   const stored = hasStoredFilter(LS_KEYS.PRICES_PERSONAL_INSTANCES)
-  if (!stored && filterInstancesPersonal.value.length === 0) {
-    filterInstancesPersonal.value = newList.map(i => i.id)
+  if (!stored && filterSourcesPersonal.value.length === 0) {
+    filterSourcesPersonal.value = newSources.flat.map(source => source.sourceId)
     return
   }
 
-  if (stored) {
-    const validIds = new Set(newList.map(i => i.id))
-    filterInstancesPersonal.value = (filterInstancesPersonal.value || []).filter(id => validIds.has(id))
-  }
+  filterSourcesPersonal.value = normalizeStoredSourceIds(filterSourcesPersonal.value, newSources.flat)
 }, { immediate: true })
 
-watch(allInstancesList, (newList) => {
-  if (newList.length === 0) return
+watch(allSourcesList, (newSources) => {
+  if (newSources.flat.length === 0) return
   const stored = hasStoredFilter(LS_KEYS.PRICES_COLLECTIVE_INSTANCES)
-  if (!stored && filterInstancesCollective.value.length === 0) {
-    filterInstancesCollective.value = newList.map(i => i.id)
+  if (!stored && filterSourcesCollective.value.length === 0) {
+    filterSourcesCollective.value = newSources.flat.map(source => source.sourceId)
     return
   }
 
-  if (stored) {
-    const validIds = new Set(newList.map(i => i.id))
-    filterInstancesCollective.value = (filterInstancesCollective.value || []).filter(id => validIds.has(id))
-  }
+  filterSourcesCollective.value = normalizeStoredSourceIds(filterSourcesCollective.value, newSources.flat)
 }, { immediate: true })
 
 // ========================================
@@ -599,12 +694,37 @@ const allItemsPersonal = computed(() => {
   const currentServer = appStore.config.server
   const priceMap = personalPricesStore.prices[currentServer] || {}
   const itemInstances = jsonStore.itemToInstancesMap
+  const harvestResources = Array.isArray(jsonStore.rawHarvestResources) ? jsonStore.rawHarvestResources : []
+
+  const itemJobSkillIdsMap = new Map()
+  harvestResources.forEach((resource) => {
+    const skillId = Number(resource.jobSkillId)
+    if (!Number.isFinite(skillId)) return
+    const loots = Array.isArray(resource.loots) ? resource.loots : []
+    loots.forEach((loot) => {
+      const itemId = Number(loot.itemId)
+      if (!Number.isFinite(itemId) || itemId <= 0) return
+      if (!itemJobSkillIdsMap.has(itemId)) itemJobSkillIdsMap.set(itemId, new Set())
+      itemJobSkillIdsMap.get(itemId).add(skillId)
+    })
+  })
   
   return items.map(item => {
     const instanceIds = itemInstances[item.id] || []
     const instanceNames = instanceIds
       .map(id => getCachedInstanceName(id))
       .sort((a, b) => a.localeCompare(b))
+
+    const jobSkillIds = [...(itemJobSkillIdsMap.get(item.id) || new Set())].sort((a, b) => a - b)
+    const jobNames = jobSkillIds
+      .map(skillId => getHarvestJobName(skillId))
+      .sort((a, b) => a.localeCompare(b))
+
+    const sourceIds = [
+      ...instanceIds.map(id => `instance:${id}`),
+      ...jobSkillIds.map(skillId => `job:${skillId}`)
+    ]
+    const sourceNames = [...instanceNames, ...jobNames]
     
     return {
       id: item.id,
@@ -612,8 +732,8 @@ const allItemsPersonal = computed(() => {
       rarity: item.rarity || 0,
       level: item.level || 0,
       price: priceMap[item.id]?.price || null,
-      instanceIds: instanceIds,
-      instances: instanceNames
+      sourceIds,
+      sources: sourceNames
     }
   })
 })
@@ -636,12 +756,37 @@ const allItemsCollective = computed(() => {
   const currentServer = appStore.config.server
   const priceMap = collectivePricesStore.prices[currentServer] || {}
   const itemInstances = jsonStore.itemToInstancesMap
+  const harvestResources = Array.isArray(jsonStore.rawHarvestResources) ? jsonStore.rawHarvestResources : []
+
+  const itemJobSkillIdsMap = new Map()
+  harvestResources.forEach((resource) => {
+    const skillId = Number(resource.jobSkillId)
+    if (!Number.isFinite(skillId)) return
+    const loots = Array.isArray(resource.loots) ? resource.loots : []
+    loots.forEach((loot) => {
+      const itemId = Number(loot.itemId)
+      if (!Number.isFinite(itemId) || itemId <= 0) return
+      if (!itemJobSkillIdsMap.has(itemId)) itemJobSkillIdsMap.set(itemId, new Set())
+      itemJobSkillIdsMap.get(itemId).add(skillId)
+    })
+  })
   
   return items.map(item => {
     const instanceIds = itemInstances[item.id] || []
     const instanceNames = instanceIds
       .map(id => getCachedInstanceName(id))
       .sort((a, b) => a.localeCompare(b))
+
+    const jobSkillIds = [...(itemJobSkillIdsMap.get(item.id) || new Set())].sort((a, b) => a - b)
+    const jobNames = jobSkillIds
+      .map(skillId => getHarvestJobName(skillId))
+      .sort((a, b) => a.localeCompare(b))
+
+    const sourceIds = [
+      ...instanceIds.map(id => `instance:${id}`),
+      ...jobSkillIds.map(skillId => `job:${skillId}`)
+    ]
+    const sourceNames = [...instanceNames, ...jobNames]
     
     return {
       id: item.id,
@@ -649,8 +794,8 @@ const allItemsCollective = computed(() => {
       rarity: item.rarity || 0,
       level: item.level || 0,
       price: priceMap[item.id]?.price || null,
-      instanceIds: instanceIds,
-      instances: instanceNames
+      sourceIds,
+      sources: sourceNames
     }
   })
 })
@@ -693,17 +838,17 @@ function getRarityDisplayTextCollective() {
   return `${filterRaritiesCollective.value.length} sélectionné(e)s`
 }
 
-function getInstancesDisplayTextPersonal() {
-  const fi = filterInstancesPersonal.value || []
+function getSourcesDisplayTextPersonal() {
+  const fi = filterSourcesPersonal.value || []
   if (fi.length === 0) return t('divers.none_selected')
-  if (fi.length === allInstancesList.value.length) return t('divers.all_selected')
+  if (fi.length === allSourcesList.value.flat.length) return t('divers.all_selected')
   return `${fi.length} ${t('divers.selected_count')}`
 }
 
-function getInstancesDisplayTextCollective() {
-  const fi = filterInstancesCollective.value || []
+function getSourcesDisplayTextCollective() {
+  const fi = filterSourcesCollective.value || []
   if (fi.length === 0) return t('divers.none_selected')
-  if (fi.length === allInstancesList.value.length) return t('divers.all_selected')
+  if (fi.length === allSourcesList.value.flat.length) return t('divers.all_selected')
   return `${fi.length} ${t('divers.selected_count')}`
 }
 
@@ -785,36 +930,36 @@ function validateLevelMaxCollective(event) {
   event.target.value = filterLevelMaxCollective.value
 }
 
-// Instance toggle functions
-function toggleInstancePersonal(instanceId) {
-  if (filterInstancesPersonal.value.includes(instanceId)) {
-    filterInstancesPersonal.value = filterInstancesPersonal.value.filter(id => id !== instanceId)
+// Source toggle functions
+function toggleSourcePersonal(sourceId) {
+  if (filterSourcesPersonal.value.includes(sourceId)) {
+    filterSourcesPersonal.value = filterSourcesPersonal.value.filter(id => id !== sourceId)
   } else {
-    filterInstancesPersonal.value.push(instanceId)
+    filterSourcesPersonal.value.push(sourceId)
   }
 }
 
-function toggleAllInstancesPersonal(value) {
+function toggleAllSourcesPersonal(value) {
   if (value) {
-    filterInstancesPersonal.value = allInstancesList.value.map(i => i.id)
+    filterSourcesPersonal.value = allSourcesList.value.flat.map(source => source.sourceId)
   } else {
-    filterInstancesPersonal.value = []
+    filterSourcesPersonal.value = []
   }
 }
 
-function toggleInstanceCollective(instanceId) {
-  if (filterInstancesCollective.value.includes(instanceId)) {
-    filterInstancesCollective.value = filterInstancesCollective.value.filter(id => id !== instanceId)
+function toggleSourceCollective(sourceId) {
+  if (filterSourcesCollective.value.includes(sourceId)) {
+    filterSourcesCollective.value = filterSourcesCollective.value.filter(id => id !== sourceId)
   } else {
-    filterInstancesCollective.value.push(instanceId)
+    filterSourcesCollective.value.push(sourceId)
   }
 }
 
-function toggleAllInstancesCollective(value) {
+function toggleAllSourcesCollective(value) {
   if (value) {
-    filterInstancesCollective.value = allInstancesList.value.map(i => i.id)
+    filterSourcesCollective.value = allSourcesList.value.flat.map(source => source.sourceId)
   } else {
-    filterInstancesCollective.value = []
+    filterSourcesCollective.value = []
   }
 }
 
@@ -880,11 +1025,11 @@ function clearAllPrices() {
   }
 }
 
-watch([searchNamePersonal, filterRaritiesPersonal, filterLevelMinPersonal, filterLevelMaxPersonal, filterInstancesPersonal, itemsPerPagePersonal], () => {
+watch([searchNamePersonal, filterRaritiesPersonal, filterLevelMinPersonal, filterLevelMaxPersonal, filterSourcesPersonal, itemsPerPagePersonal], () => {
   currentPagePersonal.value = 1
 })
 
-watch([searchNameCollective, filterRaritiesCollective, filterLevelMinCollective, filterLevelMaxCollective, filterInstancesCollective, itemsPerPageCollective], () => {
+watch([searchNameCollective, filterRaritiesCollective, filterLevelMinCollective, filterLevelMaxCollective, filterSourcesCollective, itemsPerPageCollective], () => {
   currentPageCollective.value = 1
 })
 </script>

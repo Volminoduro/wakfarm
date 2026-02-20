@@ -39,6 +39,7 @@ import { useJsonStore } from '@/stores/useJsonStore'
 import { useDevToolsStore } from '@/stores/useDevToolsStore'
 import { useLocalStorage } from '@/composables/useLocalStorage'
 import { useUpdateChecker } from '@/composables/useUpdateChecker'
+import { isTauriAvailable } from '@/utils/tauriHelper'
 import { LS_KEYS } from '@/constants/localStorageKeys'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
@@ -65,12 +66,15 @@ const { checkForUpdates } = useUpdateChecker({ repo: UPDATE_REPO })
 // Charger les données au montage
 onMounted(async () => {
   // Always show window on startup (unless minimize-to-tray enabled)
-  try {
-    await invoke('set_minimize_to_tray_enabled', { enabled: !!minimizeToTray.value })
-    // Show window on every normal startup (not hidden in tray)
-    await invoke('show_window')
-  } catch (error) {
-    console.warn('Unable to show window:', error)
+  // Only invoke Tauri commands if running in desktop mode
+  if (isTauriAvailable()) {
+    try {
+      await invoke('set_minimize_to_tray_enabled', { enabled: !!minimizeToTray.value })
+      // Show window on every normal startup (not hidden in tray)
+      await invoke('show_window')
+    } catch (error) {
+      console.warn('Unable to show window:', error)
+    }
   }
 
   // Load app data
