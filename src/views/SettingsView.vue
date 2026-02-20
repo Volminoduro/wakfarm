@@ -1,6 +1,6 @@
 <template>
   <div class="px-8 py-6 max-w-480 mx-auto">
-    <div class="cf-panel">
+    <div class="cf-panel" v-if="isTauriAvailable()">
       <div class="flex items-center gap-2 mb-4">
         <input
           id="launchOnStartup"
@@ -52,6 +52,7 @@ import { useLocalStorage } from '@/composables/useLocalStorage'
 import { useAutostart } from '@/composables/useAutostart'
 import { useMinimizeToTray } from '@/composables/useMinimizeToTray'
 import { useDevToolsStore } from '@/stores/useDevToolsStore'
+import { isTauriAvailable } from '@/utils/tauriHelper'
 import { LS_KEYS } from '@/constants/localStorageKeys'
 import { watch, onMounted } from 'vue'
 
