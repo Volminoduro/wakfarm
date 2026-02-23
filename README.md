@@ -26,6 +26,12 @@ Application desktop **et web** pour calculer la rentabilité des donjons Wakfu a
 ### Récapitulatif rentabilité horaire
 ![Récapitulatif horaire](doc/screenshots/rentaHoraireRecap.png)
 
+### Rentabilité métier d'artisanat
+![Rentabilité métier craft](doc/screenshots/jobCraft.png)
+
+### Rentabilité métier de récolte
+![Rentabilité métier harvest](doc/screenshots/jobHarvest.png)
+
 ### Prix personnels
 ![Prix personnels](doc/screenshots/pricePersonnels.png)
 

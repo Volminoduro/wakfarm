@@ -35,7 +35,7 @@
           :class="['cf-tab', subTab === 'harvest' ? 'cf-tab--active' : 'cf-tab--inactive']"
           :style="subTab === 'harvest' ? 'text-shadow: var(--active-tab-text-shadow);' : ''"
         >
-          {{ $t('divers.harvest_jobs_tab') || 'Métiers de récolte' }}
+          {{ $t('divers.harvest_jobs_hour_tab') || 'Métiers de récolte' }}
         </button>
       </nav>
 
@@ -141,7 +141,7 @@
             <span>{{ job.label }}</span>
           </h3>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div :class="['grid grid-cols-1 gap-3', isHarvestJob(job.skillId) ? 'md:grid-cols-3' : 'md:grid-cols-1']">
             <div>
               <label class="block text-xs font-medium mb-1 cf-text-secondary">{{ $t('divers.harvest_job_level') || 'Niveau métier' }}</label>
               <input
@@ -154,7 +154,7 @@
               >
             </div>
 
-            <div>
+            <div v-if="isHarvestJob(job.skillId)">
               <label class="block text-xs font-medium mb-1 cf-text-secondary">{{ $t('divers.harvest_job_bonus') || 'Bonus récolte' }}</label>
               <InputUnitNumber
                 :value="harvestJobsConfig[job.skillId]?.bonus"
@@ -167,7 +167,7 @@
               
             </div>
 
-            <div>
+            <div v-if="isHarvestJob(job.skillId)">
               <label class="block text-xs font-medium mb-1 cf-text-secondary">{{ $t('divers.harvest_job_action_seconds') || 'Temps d\'action / clic' }}</label>
               <InputUnitNumber
                 :value="harvestJobsConfig[job.skillId]?.actionSeconds"
@@ -176,7 +176,7 @@
                 :max="ACTION_SECONDS_MAX"
                 step="0.1"
                 width-class="w-18"
-                :placeholder="String(HARVEST_DEFAULT_ACTION_SECONDS[job.skillId])"
+                :placeholder="String(HARVEST_DEFAULT_ACTION_SECONDS[job.skillId] ?? 2)"
                 @input="(event) => validateHarvestActionSeconds(job.skillId, event)"
               />
             </div>
@@ -218,6 +218,7 @@ import InputUnitNumber from '@/components/InputUnitNumber.vue'
 import ToggleAllButton from '@/components/ToggleAllButton.vue'
 import { calculateInstanceForRunWithPricesAndPassFilters, clearCalculatedInstanceCache, clearCalculatedInstanceWithPricesCache } from '@/utils/instanceProcessor'
 import { clampInteger, calculateResourceExpectedKamas, optimizeHarvestForTime } from '@/utils/harvestProfit'
+import { HARVEST_JOB_SKILL_IDS } from '@/utils/craftProfit'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -228,13 +229,23 @@ const configRunStore = useConfigRunStore()
 
 const subTab = useLocalStorage(LS_KEYS.RUNS_SUBTAB, 'time')
 
-const harvestJobsDefinitions = [
-  { skillId: 71, label: computed(() => t('divers.harvest_job_skill_71') || 'Forestier') },
-  { skillId: 64, label: computed(() => t('divers.harvest_job_skill_64') || 'Paysan') },
-  { skillId: 72, label: computed(() => t('divers.harvest_job_skill_72') || 'Herboriste') },
-  { skillId: 73, label: computed(() => t('divers.harvest_job_skill_73') || 'Mineur') },
-  { skillId: 75, label: computed(() => t('divers.harvest_job_skill_75') || 'Pêcheur') }
-]
+const orderedJobIds = [71, 64, 72, 73, 75]
+
+const harvestJobsDefinitions = computed(() => {
+  const harvest = Array.isArray(jsonStore.rawHarvestResources) ? jsonStore.rawHarvestResources : []
+  const availableJobIds = [...new Set(harvest.map(resource => Number(resource.jobSkillId)).filter(id => Number.isFinite(id) && id > 0))]
+  const availableSet = new Set(availableJobIds)
+
+  const sortedJobIds = [
+    ...orderedJobIds.filter(id => availableSet.has(id)),
+    ...availableJobIds.filter(id => !orderedJobIds.includes(id)).sort((a, b) => a - b)
+  ]
+
+  return sortedJobIds.map(skillId => ({
+    skillId,
+    label: t(`divers.harvest_job_skill_${skillId}`) || `Métier #${skillId}`
+  }))
+})
 
 const HARVEST_DEFAULT_ACTION_SECONDS = {
   64: 2,  // Paysan
@@ -257,6 +268,79 @@ const harvestGlobalBonus = useLocalStorage(LS_KEYS.HARVEST_GLOBAL_BONUS, null)
 const ACTION_SECONDS_MIN = 0.1
 const ACTION_SECONDS_MAX = 999
 
+function isHarvestJob(skillId) {
+  return HARVEST_JOB_SKILL_IDS.includes(Number(skillId))
+}
+
+function getPrimaryLootStats(resource) {
+  const primaryItemId = Number(resource?.primaryItemId)
+  const loots = Array.isArray(resource?.loots) ? resource.loots : []
+  const primaryLoots = loots.filter(loot => Number(loot.itemId) === primaryItemId)
+
+  const totalDropRate = primaryLoots.reduce(
+    (sum, loot) => sum + Math.max(0, Number(loot.dropRate) || 0),
+    0
+  )
+  const expectedQuantityPerAction = primaryLoots.reduce(
+    (sum, loot) => sum + (Math.max(0, Number(loot.dropRate) || 0) * Math.max(0, Number(loot.expectedQuantity) || 0)),
+    0
+  )
+
+  return {
+    dropRate: totalDropRate > 0 ? Math.min(1, totalDropRate) : 1,
+    expectedQuantityPerAction
+  }
+}
+
+function deduplicatePicksByItemId(picks) {
+  const map = new Map()
+  for (const pick of picks) {
+    const itemId = Number(pick?.itemId)
+    if (!Number.isFinite(itemId) || itemId <= 0) continue
+    const existing = map.get(itemId)
+    if (!existing || (Number(pick.totalKamas) || 0) > (Number(existing.totalKamas) || 0)) {
+      map.set(itemId, pick)
+    }
+  }
+  return Array.from(map.values())
+}
+
+function buildAlternativePick(resource, totalSeconds, itemRarityMap) {
+  const actionSeconds = Math.max(0.1, Number(resource?.actionSeconds) || 0)
+  const count = Math.floor((Number(totalSeconds) || 0) / actionSeconds)
+  if (count <= 0) return null
+
+  const { dropRate, expectedQuantityPerAction } = getPrimaryLootStats(resource)
+  const quantityMultiplier = Math.max(0, Number(resource.quantityMultiplier) || 1)
+  const baseExpectedItems = expectedQuantityPerAction > 0 ? expectedQuantityPerAction : dropRate
+  const expectedItems = count * baseExpectedItems * quantityMultiplier
+  const totalKamas = count * Math.max(0, Number(resource.expectedKamas) || 0)
+  const itemId = Number(resource.primaryItemId)
+
+  return {
+    itemId,
+    count,
+    dropRate,
+    expectedItems,
+    totalSeconds: count * actionSeconds,
+    totalKamas,
+    rarity: itemRarityMap[itemId] ?? 0,
+    isEligible: false,
+    isAlternative: true
+  }
+}
+
+function getPickDropRate(pick) {
+  const dropRate = Number(pick?.dropRate)
+  if (!Number.isFinite(dropRate)) return 1
+  return Math.max(0, dropRate)
+}
+
+function passesPickFilters(pick, minItemProfit, minDropRate) {
+  const totalKamas = Number(pick?.totalKamas) || 0
+  return totalKamas >= minItemProfit && getPickDropRate(pick) >= minDropRate
+}
+
 function normalizeHarvestJobEntry(entry) {
   return {
     level: clampInteger(entry?.level, 0, 245, false),
@@ -270,11 +354,23 @@ function normalizeHarvestConfig() {
   for (const skillId of Object.keys(defaultHarvestJobsConfig)) {
     normalized[skillId] = normalizeHarvestJobEntry(harvestJobsConfig.value?.[skillId])
   }
+
+  for (const def of harvestJobsDefinitions.value) {
+    const key = String(def.skillId)
+    if (!normalized[key]) {
+      normalized[key] = normalizeHarvestJobEntry(harvestJobsConfig.value?.[key])
+    }
+  }
+
   harvestJobsConfig.value = normalized
   harvestGlobalBonus.value = clampInteger(harvestGlobalBonus.value, 0, 999, true)
 }
 
 normalizeHarvestConfig()
+
+watch(harvestJobsDefinitions, () => {
+  normalizeHarvestConfig()
+}, { deep: true })
 
 const sortedInstances = computed(() => {
   const instances = jsonStore.rawInstances || []
@@ -408,20 +504,24 @@ const harvestJobCards = computed(() => {
   const totalSeconds = timePeriodMinutes.value * 60
   const globalBonus = Math.max(0, Number(harvestGlobalBonus.value) || 0)
   const minItemProfit = appStore.config.minItemProfit || 0
+  const minDropRate = Math.max(0, Number(appStore.config.minDropRatePercent) || 0) / 100
   const minInstanceTotal = appStore.config.minInstanceTotal || 0
   const activeLevelRanges = appStore.config.levelRanges || []
 
   // If no level ranges are active, return empty array
   if (activeLevelRanges.length === 0) return []
 
-  return harvestJobsDefinitions.map(def => {
-    const label = def.label.value
+  return harvestJobsDefinitions.value.map(def => {
+    const label = def.label
     const config = normalizeHarvestJobEntry(harvestJobsConfig.value?.[def.skillId])
-    const totalBonus = globalBonus + (Number(config.bonus) || 0)
-    const defaultActionSeconds = HARVEST_DEFAULT_ACTION_SECONDS[def.skillId]
-    const effectiveActionSeconds = Number(config.actionSeconds ?? defaultActionSeconds)
+    const isHarvest = isHarvestJob(def.skillId)
+    const totalBonus = isHarvest ? (globalBonus + (Number(config.bonus) || 0)) : 0
+    const defaultActionSeconds = HARVEST_DEFAULT_ACTION_SECONDS[def.skillId] ?? 2
+    const effectiveActionSeconds = isHarvest
+      ? Number(config.actionSeconds ?? defaultActionSeconds)
+      : defaultActionSeconds
 
-    const resources = jsonStore.rawHarvestResources
+    const harvestResources = jsonStore.rawHarvestResources
       .filter(resource => Number(resource.jobSkillId) === def.skillId && Number(resource.skillLevelRequired) <= config.level)
       .map(resource => ({
         ...resource,
@@ -429,26 +529,38 @@ const harvestJobCards = computed(() => {
         quantityMultiplier: 1 + (Math.max(0, Number(totalBonus) || 0) / 100),
         expectedKamas: calculateResourceExpectedKamas(resource, unifiedPriceMap.value, totalBonus)
       }))
+
+    const resources = harvestResources
       .filter(resource => Number(resource.expectedKamas) > 0)
 
     const optimized = optimizeHarvestForTime(resources, totalSeconds)
-    const kamasPerHour = totalSeconds > 0
-      ? (optimized.totalKamas * 3600 / totalSeconds)
-      : 0
-
-    // Filter picks by minimum profit and enrich with rarity
-    const enrichedPicks = (optimized.picks || [])
-      .filter(pick => pick.totalKamas >= minItemProfit)
+    const allEnrichedPicks = (optimized.picks || [])
       .map(pick => {
         const rarity = jsonStore.itemRarityMap[pick.itemId] ?? 0
         return {
           ...pick,
-          rarity
+          rarity,
+          isEligible: passesPickFilters(pick, minItemProfit, minDropRate),
+          isAlternative: false
         }
       })
 
-    // Recalculate totalKamas after filtering picks
-    const filteredTotalKamas = enrichedPicks.reduce((sum, pick) => sum + (pick.totalKamas || 0), 0)
+    const eligiblePicks = allEnrichedPicks.filter(pick => pick.isEligible)
+
+    const optimizedItemIds = new Set((optimized.picks || []).map(pick => Number(pick.itemId)))
+    const alternativePicks = resources
+      .filter(resource => !optimizedItemIds.has(Number(resource.primaryItemId)))
+      .sort((a, b) => (Number(b.expectedKamas) || 0) - (Number(a.expectedKamas) || 0))
+      .map(resource => buildAlternativePick(resource, totalSeconds, jsonStore.itemRarityMap))
+      .filter(Boolean)
+      .filter(pick => passesPickFilters(pick, minItemProfit, minDropRate))
+
+    const grayPicks = deduplicatePicksByItemId(alternativePicks)
+      .sort((a, b) => (b.totalKamas || 0) - (a.totalKamas || 0))
+
+    const displayedPicks = [...eligiblePicks, ...grayPicks]
+
+    const filteredTotalKamas = eligiblePicks.reduce((sum, pick) => sum + (pick.totalKamas || 0), 0)
 
     return {
       skillId: def.skillId,
@@ -458,7 +570,7 @@ const harvestJobCards = computed(() => {
       kamasPerHour: totalSeconds > 0 ? (filteredTotalKamas * 3600 / totalSeconds) : 0,
       usedSeconds: optimized.usedSeconds,
       unusedSeconds: optimized.unusedSeconds,
-      picks: enrichedPicks
+      picks: displayedPicks
     }
   }).filter(card => {
     // Filter by minimum total kamas

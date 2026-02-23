@@ -32,9 +32,15 @@
         {{ $t('divers.tab_runs') }}
       </button>
       <button 
+        @click="mainTab = 'craft'" 
+        :class="['flex-1 py-2 transition-all font-semibold text-lg', 'cf-tab-separator', mainTab === 'craft' ? 'cf-tab-active' : 'cf-tab-inactive']"
+        :style="`border-right-color: var(--color-tab-separator) !important; ${mainTab === 'craft' ? 'text-shadow: var(--active-tab-text-shadow);' : ''}`">
+        {{ $t('divers.tab_craft') || 'Rentabilité par craft' }}
+      </button>
+      <button 
         @click="mainTab = 'prices'" 
-        :class="['flex-1 py-2 transition-all font-semibold text-lg', mainTab === 'prices' ? 'cf-tab-active' : 'cf-tab-inactive']"
-        :style="mainTab === 'prices' ? 'text-shadow: var(--active-tab-text-shadow);' : ''">
+        :class="['flex-1 py-2 transition-all font-semibold text-lg', 'cf-tab-separator', mainTab === 'prices' ? 'cf-tab-active' : 'cf-tab-inactive']"
+        :style="`border-right-color: var(--color-tab-separator) !important; ${mainTab === 'prices' ? 'text-shadow: var(--active-tab-text-shadow);' : ''}`">
         {{ $t('divers.tab_prices') }}
       </button>
       <button 

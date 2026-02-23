@@ -13,10 +13,12 @@ export const useJsonStore = defineStore('data', {
     _priceMapCache: { server: null, version: null, map: null },
     rawInstances: [],
     rawItems: [],
+    planCraftMap: {},
     _rawMapping: [],
     _rawLoots: [],
     _bossMapping: {},
     rawHarvestResources: [],
+    rawCrafts: [],
     _hasConfigWatcher: false,
     instancesBase: []
   }),
@@ -137,14 +139,18 @@ export const useJsonStore = defineStore('data', {
         
         // Load remaining data in background (Phase 2)
         try {
-          const [mappingRes, lootRes, serversRes, bossMappingRes, harvestResourcesRes] = await Promise.all([
+          const [mappingRes, lootRes, serversRes, bossMappingRes, harvestResourcesRes, craftsRes, planCraftMappingRes] = await Promise.all([
             axios.get(`${basePath}data/mapping.json`),
             axios.get(`${basePath}data/loots.json`),
             axios.get(`${basePath}data/servers.json`),
             axios.get(`${basePath}data/boss-mapping.json`),
             axios.get(`${basePath}data/harvest.json`)
               .catch(() => axios.get(`${basePath}data/harvest-resources.json`))
-              .catch(() => ({ data: { resources: [] } }))
+              .catch(() => ({ data: { resources: [] } })),
+            axios.get(`${basePath}data/crafts.json`)
+              .catch(() => ({ data: { crafts: [] } })),
+            axios.get(`${basePath}data/plan-craft-mapping.json`)
+              .catch(() => ({ data: {} }))
           ])
           this.servers = serversRes.data || []
           this._rawMapping = mappingRes.data
@@ -153,6 +159,12 @@ export const useJsonStore = defineStore('data', {
           this.rawHarvestResources = Array.isArray(harvestResourcesRes.data?.resources)
             ? harvestResourcesRes.data.resources
             : []
+          this.rawCrafts = Array.isArray(craftsRes.data?.crafts)
+            ? craftsRes.data.crafts
+            : []
+          this.planCraftMap = planCraftMappingRes.data && typeof planCraftMappingRes.data === 'object'
+            ? planCraftMappingRes.data
+            : {}
           
           this.rawInstances = this.rawInstances.map(inst => ({
             ...inst,

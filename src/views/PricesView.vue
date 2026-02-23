@@ -432,7 +432,8 @@
                     @change="toggleSourceCollective(job.sourceId)"
                     class="custom-checkbox-small"
                   />
-                  <span class="text-slate-200">
+                  <span class="text-slate-200 flex items-center gap-2">
+                    <JobIcon :job-id="job.id" :size="16" />
                     {{ job.name }}
                   </span>
                 </label>
@@ -532,6 +533,8 @@ import { usePersonalPricesStore } from '@/stores/usePersonalPricesStore'
 import { useAppStore } from '@/stores/useAppStore'
 import { useI18n } from 'vue-i18n'
 import PricesTable from '@/components/PricesTable.vue'
+import JobIcon from '@/components/JobIcon.vue'
+import { buildItemJobSkillIdsMap, getAllJobSkillIds } from '@/utils/craftProfit'
 
 const { t } = useI18n()
 
@@ -651,8 +654,9 @@ const allInstancesList = computed(() => {
 })
 
 const allHarvestJobsList = computed(() => {
-  const raw = Array.isArray(jsonStore.rawHarvestResources) ? jsonStore.rawHarvestResources : []
-  const uniqueSkillIds = [...new Set(raw.map(resource => Number(resource.jobSkillId)).filter(id => Number.isFinite(id) && id > 0))]
+  const harvest = Array.isArray(jsonStore.rawHarvestResources) ? jsonStore.rawHarvestResources : []
+  const crafts = Array.isArray(jsonStore.rawCrafts) ? jsonStore.rawCrafts : []
+  const uniqueSkillIds = getAllJobSkillIds(harvest, crafts)
 
   return uniqueSkillIds
     .map(skillId => ({
@@ -751,19 +755,9 @@ const allItemsPersonal = computed(() => {
   const priceMap = personalPricesStore.prices[currentServer] || {}
   const itemInstances = jsonStore.itemToInstancesMap
   const harvestResources = Array.isArray(jsonStore.rawHarvestResources) ? jsonStore.rawHarvestResources : []
+  const crafts = Array.isArray(jsonStore.rawCrafts) ? jsonStore.rawCrafts : []
 
-  const itemJobSkillIdsMap = new Map()
-  harvestResources.forEach((resource) => {
-    const skillId = Number(resource.jobSkillId)
-    if (!Number.isFinite(skillId)) return
-    const loots = Array.isArray(resource.loots) ? resource.loots : []
-    loots.forEach((loot) => {
-      const itemId = Number(loot.itemId)
-      if (!Number.isFinite(itemId) || itemId <= 0) return
-      if (!itemJobSkillIdsMap.has(itemId)) itemJobSkillIdsMap.set(itemId, new Set())
-      itemJobSkillIdsMap.get(itemId).add(skillId)
-    })
-  })
+  const itemJobSkillIdsMap = buildItemJobSkillIdsMap(harvestResources, crafts)
   
   return items.map(item => {
     const instanceIds = itemInstances[item.id] || []
@@ -813,19 +807,9 @@ const allItemsCollective = computed(() => {
   const priceMap = collectivePricesStore.prices[currentServer] || {}
   const itemInstances = jsonStore.itemToInstancesMap
   const harvestResources = Array.isArray(jsonStore.rawHarvestResources) ? jsonStore.rawHarvestResources : []
+  const crafts = Array.isArray(jsonStore.rawCrafts) ? jsonStore.rawCrafts : []
 
-  const itemJobSkillIdsMap = new Map()
-  harvestResources.forEach((resource) => {
-    const skillId = Number(resource.jobSkillId)
-    if (!Number.isFinite(skillId)) return
-    const loots = Array.isArray(resource.loots) ? resource.loots : []
-    loots.forEach((loot) => {
-      const itemId = Number(loot.itemId)
-      if (!Number.isFinite(itemId) || itemId <= 0) return
-      if (!itemJobSkillIdsMap.has(itemId)) itemJobSkillIdsMap.set(itemId, new Set())
-      itemJobSkillIdsMap.get(itemId).add(skillId)
-    })
-  })
+  const itemJobSkillIdsMap = buildItemJobSkillIdsMap(harvestResources, crafts)
   
   return items.map(item => {
     const instanceIds = itemInstances[item.id] || []

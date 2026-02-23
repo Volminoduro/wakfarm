@@ -12,6 +12,8 @@
 
       <RentabilityHourView v-else-if="mainTab === 'runs'" />
 
+      <RentabilityCraftView v-else-if="mainTab === 'craft'" />
+
       <PricesView v-else-if="mainTab === 'prices'" />
 
       <SettingsView v-else-if="mainTab === 'settings'" />
@@ -45,6 +47,7 @@ import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import RentabilityRunView from '@/views/RentabilityRunView.vue'
 import RentabilityHourView from '@/views/RentabilityHourView.vue'
+import RentabilityCraftView from '@/views/RentabilityCraftView.vue'
 import PricesView from '@/views/PricesView.vue'
 import SettingsView from '@/views/SettingsView.vue'
 import ToastAlerts from '@/components/ToastAlerts.vue'
