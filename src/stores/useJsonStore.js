@@ -4,6 +4,7 @@ import { useAppStore } from './useAppStore'
 import { watch } from 'vue'
 import { usePersonalPricesStore } from './usePersonalPricesStore'
 import { useCollectivePricesStore } from './useCollectivePricesStore'
+import { isPriceWithinAgeLimit } from '@/utils/priceFilter'
 
 export const useJsonStore = defineStore('data', {
   state: () => ({
@@ -76,35 +77,51 @@ export const useJsonStore = defineStore('data', {
   actions: {
     /**
     * Récupère une map de prix avec priorité : personnel > collectif
+     * Applique le filtre d'âge des prix si configuré
      * @param {string} server - Le serveur pour lequel récupérer les prix
      * @returns {Object} Map { itemId: price }
      */
     getPriceMapWithPersonal(server) {
       const personalStore = usePersonalPricesStore()
       const collectiveStore = useCollectivePricesStore()
+      const appStore = useAppStore()
       const version = this.pricesLastUpdate || 0
       const serverKey = server || 'default'
+      const maxAgeDays = appStore.config.maxPriceAgeDays
 
       if (
         this._priceMapCache &&
         this._priceMapCache.server === serverKey &&
         this._priceMapCache.version === version &&
+        this._priceMapCache.maxAgeDays === maxAgeDays &&
         this._priceMapCache.map
       ) {
         return this._priceMapCache.map
       }
       
-      // Gather all items that have prices
+      // Gather all items that have prices (with age filtering)
       const itemIds = new Set()
       
       // Add items with personal prices (highest priority)
       if (personalStore.prices[server]) {
-        Object.keys(personalStore.prices[server]).forEach(id => itemIds.add(id))
+        Object.keys(personalStore.prices[server]).forEach(id => {
+          const priceEntry = personalStore.prices[server][id]
+          if (isPriceWithinAgeLimit(priceEntry.lastUpdated, maxAgeDays)) {
+            itemIds.add(id)
+          }
+        })
       }
       
-      // Add items with collective prices (fallback)
+      // Add items with collective prices (fallback, only if not already personal)
       if (collectiveStore.prices[server]) {
-        Object.keys(collectiveStore.prices[server]).forEach(id => itemIds.add(id))
+        Object.keys(collectiveStore.prices[server]).forEach(id => {
+          if (!itemIds.has(id)) {
+            const priceEntry = collectiveStore.prices[server][id]
+            if (isPriceWithinAgeLimit(priceEntry.lastUpdated, maxAgeDays)) {
+              itemIds.add(id)
+            }
+          }
+        })
       }
       
       // Create unified map (personal > collective)
@@ -120,7 +137,7 @@ export const useJsonStore = defineStore('data', {
         }
       })
       
-      this._priceMapCache = { server: serverKey, version, map: unifiedMap }
+      this._priceMapCache = { server: serverKey, version, maxAgeDays, map: unifiedMap }
       return unifiedMap
     },
 

@@ -12,6 +12,7 @@
               <th class="text-center font-medium pb-2 text-base cf-text-normal">{{ $t('divers.config_min_profit') }}</th>
               <th class="text-center font-medium pb-2 text-base cf-text-normal">{{ $t('divers.config_min_total') }}</th>
               <th class="text-center font-medium pb-2 text-base cf-text-normal">{{ $t('divers.level_ranges_title') }}</th>
+              <th class="text-center font-medium pb-2 text-base cf-text-normal">{{ $t('divers.config_max_price_age') }}</th>
               <th class="text-center font-medium pb-2 text-base cf-text-normal" colspan="2">{{ $t('divers.config_server') }}</th>
             </tr>
           </thead>
@@ -53,6 +54,21 @@
               <td class="text-center">
                 <div class="w-40 mx-auto">
                   <LevelRangeFilter />
+                </div>
+              </td>
+              <td class="text-center">
+                <div class="w-40 mx-auto">
+                  <select 
+                    :value="store.config.maxPriceAgeDays === null ? 'unlimited' : store.config.maxPriceAgeDays"
+                    @input="updateMaxPriceAgeDays"
+                    class="cf-select"
+                  >
+                    <option value="1">{{ $t('divers.price_age_1day') }}</option>
+                    <option value="7">{{ $t('divers.price_age_7days') }}</option>
+                    <option value="30">{{ $t('divers.price_age_30days') }}</option>
+                    <option value="90">{{ $t('divers.price_age_90days') }}</option>
+                    <option value="unlimited">{{ $t('divers.price_age_unlimited') }}</option>
+                  </select>
                 </div>
               </td>
               <td colspan="2" class="text-center">
@@ -115,6 +131,17 @@ function updateMinDropRate(event) {
   // Update input if value was clamped
   if (parsedValue !== clampedValue) {
     event.target.value = clampedValue.toString()
+  }
+}
+
+// Max price age updater
+function updateMaxPriceAgeDays(event) {
+  const value = event.target.value
+  
+  if (value === 'unlimited') {
+    store.config.maxPriceAgeDays = null
+  } else {
+    store.config.maxPriceAgeDays = parseInt(value, 10)
   }
 }
 </script>

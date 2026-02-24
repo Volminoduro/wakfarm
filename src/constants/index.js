@@ -28,6 +28,7 @@ export const DEFAULT_CONFIG = {
   minItemProfit: null,
   minDropRatePercent: null,
   minInstanceTotal: null,
+  maxPriceAgeDays: null, // null = no limit, 1/7/30/90 = days
   server: 'pandora',
   levelRanges: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] // Tous activés par défaut
 }
