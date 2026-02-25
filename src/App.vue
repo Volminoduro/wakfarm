@@ -10,7 +10,9 @@
 
       <RentabilityRunView v-if="mainTab === 'rentability'" />
 
-      <RentabilityHourView v-else-if="mainTab === 'runs'" />
+      <RentabilityHourView v-else-if="mainTab === 'runs'" context="dungeons" />
+
+      <RentabilityHourView v-else-if="mainTab === 'harvest'" context="harvest" />
 
       <RentabilityCraftView v-else-if="mainTab === 'craft'" />
 

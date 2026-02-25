@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useLocalStorage } from '@/composables/useLocalStorage'
 import { useClickOutside } from '@/composables/useClickOutside'
 import { LS_KEYS } from '@/constants/localStorageKeys'
@@ -10,15 +10,6 @@ import { useI18n } from 'vue-i18n'
  */
 export function usePriceFilters(tabType = 'personal') {
   const { t } = useI18n()
-
-  // Déterminer les clés de localStorage selon le type d'onglet
-  const getStorageKey = (key) => {
-    if (tabType === 'personal') {
-      return key.replace('_personal', '_personal')
-    } else {
-      return key.replace('_personal', '_collective')
-    }
-  }
 
   // État de filtre pour search
   const searchName = useLocalStorage(
@@ -92,17 +83,19 @@ export function usePriceFilters(tabType = 'personal') {
   // Handlers
   // ========================================
 
+  function formatSelectionDisplay(selectedCount, totalCount) {
+    if (selectedCount === 0) return t('divers.level_ranges_none')
+    if (selectedCount === totalCount) return t('divers.all_selected_short')
+    return `${selectedCount}/${totalCount}`
+  }
+
   function getRarityDisplayText() {
-    if (filterRarities.value.length === 0) return t('divers.none_selected')
-    if (filterRarities.value.length === 8) return t('divers.all_selected')
-    return `${filterRarities.value.length} ${t('divers.selected_count')}`
+    return formatSelectionDisplay(filterRarities.value.length, 8)
   }
 
   function getInstancesDisplayText(allInstancesLength) {
     const fi = filterInstances.value || []
-    if (fi.length === 0) return t('divers.none_selected')
-    if (fi.length === allInstancesLength) return t('divers.all_selected')
-    return `${fi.length} ${t('divers.selected_count')}`
+    return formatSelectionDisplay(fi.length, allInstancesLength)
   }
 
   function toggleRarity(rarity) {

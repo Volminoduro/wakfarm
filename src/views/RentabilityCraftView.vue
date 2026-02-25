@@ -15,26 +15,27 @@
           :class="['cf-tab', subTab === 'jobs' ? 'cf-tab--active' : 'cf-tab--inactive']"
           :style="subTab === 'jobs' ? 'text-shadow: var(--active-tab-text-shadow);' : ''"
         >
-          {{ $t('divers.craft_jobs_tab') || 'Métiers d\'artisanat' }}
+          {{ $t('divers.nav_configuration') || 'Configuration' }}
         </button>
       </nav>
+    </div>
 
-      <div v-if="subTab === 'kamas'" class="cf-section-header">
-        <ToggleAllButton
-          :isExpanded="allCraftCardsExpanded"
-          @toggle="toggleAllCraftCards"
-        />
-      </div>
+    <FloatingFilter />
+
+    <div v-if="subTab === 'kamas'" class="cf-section-header">
+      <ToggleAllButton
+        :isExpanded="allCraftCardsExpanded"
+        @toggle="toggleAllCraftCards"
+      />
     </div>
 
     <div v-if="subTab === 'kamas'" class="cf-page">
-      <div v-if="!jsonStore.loaded" class="text-center"></div>
-      <div v-else-if="craftJobCards.length === 0" class="cf-empty-state">
+      <div v-if="jsonStore.loaded && craftJobCards.length === 0" class="cf-empty-state">
         <p class="cf-text-secondary">
           {{ $t('divers.harvest_no_resource_for_level') || 'Aucune ressource rentable pour ce niveau.' }}
         </p>
       </div>
-      <div v-else>
+      <div v-else-if="jsonStore.loaded">
         <div class="px-8 py-4 mb-6 rounded-lg cf-bg-secondary cf-border-primary border text-sm leading-relaxed">
           <p class="cf-text-primary mb-2 font-semibold">{{ $t('divers.craft_kamas_info_title') || 'About this calculation' }}</p>
           <p class="cf-text-secondary">{{ $t('divers.craft_kamas_info_desc') || 'This tab calculates the profit per craft by buying all required ingredients from the collective market.' }}</p>
@@ -129,10 +130,6 @@
                 </span>
               </label>
             </div>
-
-            <p class="mt-2 text-[11px] cf-text-secondary">
-              {{ $t('divers.craft_plans_hint') || 'Uncheck plans you have not learned to hide the craft.' }}
-            </p>
           </div>
         </div>
       </div>
@@ -150,6 +147,7 @@ import { LEVEL_RANGES } from '@/constants'
 import JobIcon from '@/components/JobIcon.vue'
 import HarvestJobCard from '@/components/Harvest/HarvestJobCard.vue'
 import ToggleAllButton from '@/components/ToggleAllButton.vue'
+import FloatingFilter from '@/components/FloatingFilter.vue'
 import { clampInteger } from '@/utils/harvestProfit'
 import { selectCraftPicks } from '@/utils/craftProfit'
 import { getRarityClass } from '@/utils/itemHelpers'

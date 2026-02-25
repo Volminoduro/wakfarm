@@ -1,5 +1,18 @@
 <template>
   <div class="px-8 py-6 max-w-480 mx-auto">
+    <div class="cf-panel mb-8">
+      <div class="flex items-center gap-2">
+        <input
+          id="shareFiltersBetweenMenus"
+          type="checkbox"
+          v-model="appStore.shareFiltersBetweenMenus"
+        />
+        <label for="shareFiltersBetweenMenus" class="cf-text-normal">
+          {{ $t('divers.settings.shareFiltersBetweenMenus') }}
+        </label>
+      </div>
+    </div>
+
     <div class="cf-panel" v-if="isTauriAvailable()">
       <div class="flex items-center gap-2 mb-4">
         <input
@@ -52,10 +65,12 @@ import { useLocalStorage } from '@/composables/useLocalStorage'
 import { useAutostart } from '@/composables/useAutostart'
 import { useMinimizeToTray } from '@/composables/useMinimizeToTray'
 import { useDevToolsStore } from '@/stores/useDevToolsStore'
+import { useAppStore } from '@/stores/useAppStore'
 import { isTauriAvailable } from '@/utils/tauriHelper'
 import { LS_KEYS } from '@/constants/localStorageKeys'
 import { watch, onMounted } from 'vue'
 
+const appStore = useAppStore()
 const minimizeToTray = useLocalStorage(LS_KEYS.SETTINGS_MINIMIZE_TO_TRAY, false)
 const { isAutostartEnabled, isLoading: autostartLoading, toggleAutostart } = useAutostart()
 const { setupCloseToTray } = useMinimizeToTray()

@@ -1,8 +1,20 @@
 <template>
   <div>
-    
-    <!-- Toggle All Button and Config Row (sticky under app header using Tailwind sticky) -->
     <div class="sticky z-30" :style="{ top: 'var(--app-header-height)' }">
+      <nav class="flex items-center border-b cf-bg-secondary cf-border-primary">
+        <button
+          class="cf-tab cf-tab--active"
+          style="text-shadow: var(--active-tab-text-shadow);"
+        >
+          {{ $t('divers.tab_rentability') }}
+        </button>
+      </nav>
+    </div>
+
+    <FloatingFilter />
+
+    <!-- Toggle All Button and Config Row -->
+    <div>
       <div class="px-4 py-2 border-b cf-bg-secondary cf-border-primary">
         <div class="flex items-center justify-between gap-4">
           <ToggleAllButton
@@ -71,9 +83,7 @@
     
     <!-- Kamas / Run -->
     <div class="px-8 py-6 max-w-480 mx-auto" ref="scrollContainer">
-      <div v-if="!jsonStore.loaded" class="text-center">
-      </div>
-      <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div v-if="jsonStore.loaded" class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <InstanceCard
           v-for="inst in visibleInstances"
           :key="inst.key"
@@ -94,6 +104,7 @@ import { useAppStore } from '@/stores/useAppStore'
 import { useJsonStore } from '@/stores/useJsonStore'
 import InstanceCard from '@/components/Instance/InstanceCard.vue'
 import ToggleAllButton from '@/components/ToggleAllButton.vue'
+import FloatingFilter from '@/components/FloatingFilter.vue'
 import { useLocalStorage } from '@/composables/useLocalStorage'
 import { useChunkedBuilder } from '@/composables/useChunkedBuilder'
 import { useInfiniteScroll } from '@/composables/useInfiniteScroll'
@@ -112,11 +123,12 @@ const ITEMS_PER_PAGE = 20
 
 // Expanded run keys are persisted in `expandedRun` (localStorage)
 
+const unifiedPriceMap = computed(() => jsonStore.getPriceMapWithPersonal(appStore.config.server))
+
 const { results: sortedInstances, rebuild: rebuildSortedInstancesChunked } = useChunkedBuilder({
   getBase: () => (Array.isArray(jsonStore.instancesBase) ? jsonStore.instancesBase : []),
   buildItem: (inst) => {
-    const unifiedPriceMap = jsonStore.getPriceMapWithPersonal(appStore.config.server)
-    const result = calculateInstanceForRunWithPricesAndPassFilters(inst.id, appStore.config, unifiedPriceMap)
+    const result = calculateInstanceForRunWithPricesAndPassFilters(inst.id, appStore.config, unifiedPriceMap.value)
     if (result && result.isDungeon) {
       return { ...result, key: `global_${result.id}` }
     }

@@ -4,7 +4,7 @@
       @click="isOpen = !isOpen"
       class="cf-select w-full text-left flex items-center justify-between min-w-40"
       type="button">
-      <span class="font-mono">{{ getDisplayText() }}</span>
+      <span>{{ getDisplayText() }}</span>
       <svg 
         :class="['w-4 h-4 transition-transform', isOpen ? 'rotate-180' : '']"
         fill="none" 

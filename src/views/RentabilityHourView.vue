@@ -11,7 +11,7 @@
           <span>Kamas /</span>
           <input
             type="number"
-            v-model.number="timePeriod"
+            v-model.number="activeTimePeriod"
             @click.stop
             @input="validateTimePeriod"
             class="cf-input text-sm py-0 px-2 text-center w-16 h-6"
@@ -23,6 +23,7 @@
         </button>
 
         <button
+          v-if="!isHarvestContext"
           @click="subTab = 'config'"
           :class="['cf-tab', subTab === 'config' ? 'cf-tab--active' : 'cf-tab--inactive']"
           :style="subTab === 'config' ? 'text-shadow: var(--active-tab-text-shadow);' : ''"
@@ -31,55 +32,63 @@
         </button>
 
         <button
+          v-if="isHarvestContext"
           @click="subTab = 'harvest'"
           :class="['cf-tab', subTab === 'harvest' ? 'cf-tab--active' : 'cf-tab--inactive']"
           :style="subTab === 'harvest' ? 'text-shadow: var(--active-tab-text-shadow);' : ''"
         >
-          {{ $t('divers.harvest_jobs_hour_tab') || 'Métiers de récolte' }}
+          {{ $t('divers.nav_configuration') || 'Configuration' }}
         </button>
       </nav>
+    </div>
 
-      <!-- Header for Configuration Tab -->
-      <div v-if="subTab === 'config'" class="cf-section-header">
-        <ToggleAllButton
-          :isExpanded="allExpanded"
-          @toggle="toggleAll"
-        />
+    <FloatingFilter />
 
-        <button @click="importRuns" class="cf-action-btn cf-action-btn--success" :title="$t('divers.runs_import') || 'Importer depuis le presse-papier'">📥 {{ $t('divers.runs_import') || 'Importer' }}</button>
+    <!-- Header for Configuration Tab -->
+    <div v-if="subTab === 'config' && !isHarvestContext" class="cf-section-header">
+      <ToggleAllButton
+        :isExpanded="allExpanded"
+        @toggle="toggleAll"
+      />
 
-        <button v-if="hasAnyRuns" @click="exportRuns" class="cf-action-btn cf-action-btn--info" :title="$t('divers.runs_export') || 'Copier la configuration dans le presse-papier'">📋 {{ $t('divers.runs_export') || 'Exporter' }}</button>
+      <button @click="importRuns" class="cf-action-btn cf-action-btn--success" :title="$t('divers.runs_import') || 'Importer depuis le presse-papier'">📥 {{ $t('divers.runs_import') || 'Importer' }}</button>
 
-        <button v-if="hasAnyRuns" @click="removeAllRuns" class="cf-action-btn cf-action-btn--danger" :title="$t('divers.runs_remove_all') || 'Supprimer tous les runs'">✕ {{ $t('divers.runs_remove_all') || 'Supprimer tous les runs' }}</button>
+      <button v-if="hasAnyRuns" @click="exportRuns" class="cf-action-btn cf-action-btn--info" :title="$t('divers.runs_export') || 'Copier la configuration dans le presse-papier'">📋 {{ $t('divers.runs_export') || 'Exporter' }}</button>
 
-        <div class="flex-1 text-right">
-          <span class="text-sm cf-text-secondary">
-            {{ sortedInstances.length }} {{ $t('divers.runs_instances') || 'instances disponibles' }}
-          </span>
-        </div>
+      <button v-if="hasAnyRuns" @click="removeAllRuns" class="cf-action-btn cf-action-btn--danger" :title="$t('divers.runs_remove_all') || 'Supprimer tous les runs'">✕ {{ $t('divers.runs_remove_all') || 'Supprimer tous les runs' }}</button>
+
+      <div class="flex-1 text-right">
+        <span class="text-sm cf-text-secondary">
+          {{ sortedInstances.length }} {{ $t('divers.runs_instances') || 'instances disponibles' }}
+        </span>
       </div>
+    </div>
 
-      <!-- Header for Kamas / Time Tab -->
-      <div v-if="subTab === 'time'" class="cf-section-header">
-        <ToggleAllButton
-          :isExpanded="allCardsExpanded"
-          @toggle="toggleAllCards"
-        />
-      </div>
+    <!-- Header for Kamas / Time Tab -->
+    <div v-if="subTab === 'time'" class="cf-section-header">
+      <ToggleAllButton
+        :isExpanded="allCardsExpanded"
+        @toggle="toggleAllCards"
+      />
     </div>
 
     <!-- Kamas / Time Tab -->
     <div v-if="subTab === 'time'" class="cf-page">
       <!-- Combined cards list (harvest jobs and instances) -->
-      <div v-if="!jsonStore.loaded" class="text-center">
-      </div>
-      <div v-else-if="allSortedCards.length === 0" class="cf-empty-state">
+      <div v-if="jsonStore.loaded && allSortedCards.length === 0" class="cf-empty-state">
         <p
-          v-if="!hasAnyRuns"
+          v-if="!isHarvestContext && !hasAnyRuns"
           class="cf-text-secondary cursor-pointer hover:underline"
           @click="subTab = 'config'"
         >
           {{ $t('divers.kamas_hour_no_runs') || 'Aucun run configuré. Allez dans l\'onglet "Configuration" pour en créer.' }}
+        </p>
+
+        <p
+          v-else-if="isHarvestContext"
+          class="cf-text-secondary"
+        >
+          {{ $t('divers.harvest_no_resource_for_level') || 'Aucune ressource rentable pour ce niveau.' }}
         </p>
 
         <p
@@ -89,7 +98,7 @@
           {{ $t('divers.kamas_hour_no_runs_matching_filters') || 'Aucun run configuré ne correspond aux filtres actuels. Vérifiez vos filtres ou rendez-vous dans l\'onglet "Configuration".' }}
         </p>
       </div>
-      <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div v-else-if="jsonStore.loaded" class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <template v-for="card in allSortedCards" :key="card.type === 'harvest' ? 'harvest-' + card.skillId : 'instance-' + card.key">
           <HarvestJobCard
             v-if="card.type === 'harvest'"
@@ -112,7 +121,7 @@
     </div>
 
     <!-- Harvest jobs configuration tab -->
-    <div v-else-if="subTab === 'harvest'" class="px-8 py-6 max-w-240 mx-auto">
+    <div v-else-if="subTab === 'harvest' && isHarvestContext" class="px-8 py-6 max-w-240 mx-auto">
       <div class="border rounded-lg p-4 mb-4 cf-bg-secondary cf-border-primary">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
@@ -187,10 +196,7 @@
 
     <!-- Runs configuration tab -->
     <div v-else class="px-8 py-6 max-w-480 mx-auto">
-      <div v-if="!jsonStore.loaded" class="text-center py-8">
-      </div>
-
-      <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div v-if="jsonStore.loaded" class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <RunConfigCard
           v-for="inst in sortedInstances"
           :key="inst.id"
@@ -216,10 +222,18 @@ import HarvestJobCard from '@/components/Harvest/HarvestJobCard.vue'
 import JobIcon from '@/components/JobIcon.vue'
 import InputUnitNumber from '@/components/InputUnitNumber.vue'
 import ToggleAllButton from '@/components/ToggleAllButton.vue'
+import FloatingFilter from '@/components/FloatingFilter.vue'
 import { calculateInstanceForRunWithPricesAndPassFilters, clearCalculatedInstanceCache, clearCalculatedInstanceWithPricesCache } from '@/utils/instanceProcessor'
 import { clampInteger, calculateResourceExpectedKamas, optimizeHarvestForTime } from '@/utils/harvestProfit'
 import { HARVEST_JOB_SKILL_IDS } from '@/utils/craftProfit'
 import { useI18n } from 'vue-i18n'
+
+const props = defineProps({
+  context: {
+    type: String,
+    default: 'dungeons'
+  }
+})
 
 const { t } = useI18n()
 
@@ -228,6 +242,20 @@ const jsonStore = useJsonStore()
 const configRunStore = useConfigRunStore()
 
 const subTab = useLocalStorage(LS_KEYS.RUNS_SUBTAB, 'time')
+const isHarvestContext = computed(() => props.context === 'harvest')
+
+watch(
+  isHarvestContext,
+  (harvestMode) => {
+    if (harvestMode && subTab.value === 'config') {
+      subTab.value = 'time'
+    }
+    if (!harvestMode && subTab.value === 'harvest') {
+      subTab.value = 'time'
+    }
+  },
+  { immediate: true }
+)
 
 const orderedJobIds = [71, 64, 72, 73, 75]
 
@@ -432,10 +460,24 @@ async function importRuns() {
 
 const expandedHourRuns = useLocalStorage(LS_KEYS.EXPANDED_HOUR_RUNS, [])
 const expandedHourJobs = useLocalStorage(LS_KEYS.EXPANDED_HOUR_JOBS, [])
-const timePeriod = useLocalStorage(LS_KEYS.TIME_PERIOD, 60)
+const timePeriodRuns = useLocalStorage(LS_KEYS.TIME_PERIOD, 60)
+const timePeriodHarvest = useLocalStorage(LS_KEYS.HARVEST_TIME_PERIOD, 60)
+
+const activeTimePeriod = computed({
+  get: () => (isHarvestContext.value ? timePeriodHarvest.value : timePeriodRuns.value),
+  set: (value) => {
+    if (isHarvestContext.value) {
+      timePeriodHarvest.value = value
+    } else {
+      timePeriodRuns.value = value
+    }
+  }
+})
 
 function validateTimePeriod(event) {
-  timePeriod.value = clampInteger(event.target.value, 0, 999, true)
+  const nextValue = clampInteger(event.target.value, 0, 999, true)
+  activeTimePeriod.value = nextValue
+  event.target.value = nextValue ?? ''
 }
 
 function ensureJobConfig(skillId) {
@@ -491,7 +533,7 @@ function clampDecimal(value, min = ACTION_SECONDS_MIN, max = ACTION_SECONDS_MAX,
 }
 
 const timePeriodMinutes = computed(() => {
-  const parsed = Number(timePeriod.value)
+  const parsed = Number(activeTimePeriod.value)
   if (!Number.isFinite(parsed) || parsed <= 0) return 0
   return Math.floor(parsed)
 })
@@ -595,11 +637,11 @@ const { results: sortedHourRuns, rebuild: rebuildSortedHourRunsChunked } = useCh
   getBase: () => Object.entries(configRunStore.configs),
   buildItem: ([instanceId, runs]) => {
     if (!jsonStore.loaded) return []
-    const unifiedPriceMapLocal = jsonStore.getPriceMapWithPersonal(appStore.config.server)
-    const timePeriodValue = Number.isFinite(timePeriod.value) ? timePeriod.value : null
+    const parsedRunsPeriod = Number(timePeriodRuns.value)
+    const timePeriodValue = Number.isFinite(parsedRunsPeriod) ? parsedRunsPeriod : null
     return runs.map(config => {
       const configWithServer = { ...config, server: appStore.config.server, timePeriod: timePeriodValue }
-      const instanceData = calculateInstanceForRunWithPricesAndPassFilters(parseInt(instanceId, 10), configWithServer, unifiedPriceMapLocal)
+      const instanceData = calculateInstanceForRunWithPricesAndPassFilters(parseInt(instanceId, 10), configWithServer, unifiedPriceMap.value)
       if (!instanceData || configWithServer.time <= 0) return null
       return {
         key: `${instanceId}_${config.id}`,
@@ -640,44 +682,54 @@ watch(
   }
 )
 
-// Combine harvest jobs and instance runs sorted by total kamas
+// Combine cards depending on current context
 const allSortedCards = computed(() => {
-  const harvestCards = harvestJobCards.value.map(card => ({
-    ...card,
-    type: 'harvest',
-    sortKey: card.totalKamas
-  }))
-  
-  const instanceCards = sortedHourRuns.value.map(runData => ({
-    ...runData,
-    type: 'instance',
-    sortKey: runData.instance?.totalKamas || 0
-  }))
-  
-  return [...harvestCards, ...instanceCards].sort((a, b) => b.sortKey - a.sortKey)
+  if (isHarvestContext.value) {
+    return harvestJobCards.value
+      .map(card => ({
+        ...card,
+        type: 'harvest',
+        sortKey: card.totalKamas
+      }))
+      .sort((a, b) => b.sortKey - a.sortKey)
+  }
+
+  return sortedHourRuns.value
+    .map(runData => ({
+      ...runData,
+      type: 'instance',
+      sortKey: runData.instance?.totalKamas || 0
+    }))
+    .sort((a, b) => b.sortKey - a.sortKey)
 })
 
 const allCardsExpanded = computed(() => {
   if (allSortedCards.value.length === 0) return false
 
-  const allHarvestExpanded = harvestJobCards.value.every(card =>
-    expandedHourJobs.value.includes(card.skillId)
-  )
-  const allInstancesExpanded = sortedHourRuns.value.every(run =>
+  if (isHarvestContext.value) {
+    return harvestJobCards.value.every(card =>
+      expandedHourJobs.value.includes(card.skillId)
+    )
+  }
+
+  return sortedHourRuns.value.every(run =>
     expandedHourRuns.value.includes(run.key)
   )
-
-  return allHarvestExpanded && allInstancesExpanded
 })
 
 function toggleAllCards() {
   if (allCardsExpanded.value) {
-    // Collapse all
-    expandedHourJobs.value = []
-    expandedHourRuns.value = []
-  } else {
-    // Expand all
+    if (isHarvestContext.value) {
+      expandedHourJobs.value = []
+    } else {
+      expandedHourRuns.value = []
+    }
+    return
+  }
+
+  if (isHarvestContext.value) {
     expandedHourJobs.value = harvestJobCards.value.map(card => card.skillId)
+  } else {
     expandedHourRuns.value = sortedHourRuns.value.map(r => r.key)
   }
 }

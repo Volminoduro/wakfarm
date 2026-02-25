@@ -4,22 +4,28 @@
     <div class="sticky z-30" :style="{ top: 'var(--app-header-height)' }">
       <nav class="flex items-center border-b cf-bg-secondary cf-border-primary">
         <button 
-          @click="activeTab = 'personal'" 
-          :class="['cf-tab', activeTab === 'personal' ? 'cf-tab--active' : 'cf-tab--inactive']"
-          :style="activeTab === 'personal' ? 'text-shadow: var(--active-tab-text-shadow);' : ''">
-          {{ $t('divers.prices_tab_personal') }}
-        </button>
-        <button 
           @click="activeTab = 'collective'" 
           :class="['cf-tab', activeTab === 'collective' ? 'cf-tab--active' : 'cf-tab--inactive']"
           :style="activeTab === 'collective' ? 'text-shadow: var(--active-tab-text-shadow);' : ''">
           {{ $t('divers.prices_tab_collective') }}
         </button>
+        <button 
+          @click="activeTab = 'personal'" 
+          :class="['cf-tab', activeTab === 'personal' ? 'cf-tab--active' : 'cf-tab--inactive']"
+          :style="activeTab === 'personal' ? 'text-shadow: var(--active-tab-text-shadow);' : ''">
+          {{ $t('divers.prices_tab_personal') }}
+        </button>
       </nav>
     </div>
 
     <!-- Personal Tab -->
-    <div v-if="activeTab === 'personal'" class="px-8 py-6 max-w-480 mx-auto">
+    <div v-if="activeTab === 'personal' && !isTabContentReady" class="px-8 py-6 max-w-480 mx-auto">
+      <div class="cf-empty-state">
+        <p class="cf-text-secondary">{{ $t('divers.prices_loading_data') || 'Chargement des données...' }}</p>
+      </div>
+    </div>
+
+    <div v-if="activeTab === 'personal' && isTabContentReady" class="px-8 py-6 max-w-480 mx-auto">
       <!-- Filters and Pagination Controls -->
       <div class="bg-secondary border-2 border-wakfu-gray rounded-lg p-4 mb-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -59,7 +65,7 @@
             <label class="block text-sm font-medium mb-2 cf-text-secondary">{{ $t('divers.prices_filter_rarity') }}</label>
             <button
               @click="isRarityDropdownOpenPersonal = !isRarityDropdownOpenPersonal"
-              class="cf-select min-w-40 w-auto text-left flex items-center justify-between font-mono">
+              class="cf-select min-w-40 w-auto text-left flex items-center justify-between">
               <span>{{ getRarityDisplayTextPersonal() }}</span>
               <span>{{ isRarityDropdownOpenPersonal ? '▲' : '▼' }}</span>
             </button>
@@ -128,7 +134,7 @@
             <label class="block text-sm font-medium mb-2 cf-text-secondary">{{ $t('divers.prices_filter_sources') || $t('divers.prices_filter_instances') }}</label>
             <button
               @click="isInstancesDropdownOpenPersonal = !isInstancesDropdownOpenPersonal"
-              class="cf-select min-w-40 w-auto text-left flex items-center justify-between font-mono">
+              class="cf-select min-w-40 w-auto text-left flex items-center justify-between">
               <span>{{ getSourcesDisplayTextPersonal() }}</span>
               <span>{{ isInstancesDropdownOpenPersonal ? '▲' : '▼' }}</span>
             </button>
@@ -268,7 +274,13 @@
     </div>
 
     <!-- Collective Tab -->
-    <div v-if="activeTab === 'collective'" class="px-8 py-6 max-w-480 mx-auto">
+    <div v-if="activeTab === 'collective' && !isTabContentReady" class="px-8 py-6 max-w-480 mx-auto">
+      <div class="cf-empty-state">
+        <p class="cf-text-secondary">{{ $t('divers.prices_loading_data') || 'Chargement des données...' }}</p>
+      </div>
+    </div>
+
+    <div v-if="activeTab === 'collective' && isTabContentReady" class="px-8 py-6 max-w-480 mx-auto">
       <!-- Filters and Pagination Controls -->
       <div class="bg-secondary border-2 border-wakfu-gray rounded-lg p-4 mb-4">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -308,7 +320,7 @@
             <label class="block text-sm font-medium mb-2 cf-text-secondary">{{ $t('divers.prices_filter_rarity') }}</label>
             <button
               @click="isRarityDropdownOpenCollective = !isRarityDropdownOpenCollective"
-              class="cf-select min-w-40 w-auto text-left flex items-center justify-between font-mono">
+              class="cf-select min-w-40 w-auto text-left flex items-center justify-between">
               <span>{{ getRarityDisplayTextCollective() }}</span>
               <span>{{ isRarityDropdownOpenCollective ? '▲' : '▼' }}</span>
             </button>
@@ -377,7 +389,7 @@
             <label class="block text-sm font-medium mb-2 cf-text-secondary">{{ $t('divers.prices_filter_sources') || $t('divers.prices_filter_instances') }}</label>
             <button
               @click="isInstancesDropdownOpenCollective = !isInstancesDropdownOpenCollective"
-              class="cf-select min-w-40 w-auto text-left flex items-center justify-between font-mono">
+              class="cf-select min-w-40 w-auto text-left flex items-center justify-between">
               <span>{{ getSourcesDisplayTextCollective() }}</span>
               <span>{{ isInstancesDropdownOpenCollective ? '▲' : '▼' }}</span>
             </button>
@@ -570,6 +582,28 @@ function getHarvestJobName(skillId) {
 
 // Active tab state
 const activeTab = useLocalStorage(LS_KEYS.PRICES_ACTIVE_TAB, 'personal')
+const isTabContentReady = ref(false)
+
+function deferTabContentRender() {
+  isTabContentReady.value = false
+
+  if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        isTabContentReady.value = true
+      })
+    })
+    return
+  }
+
+  setTimeout(() => {
+    isTabContentReady.value = true
+  }, 0)
+}
+
+watch(activeTab, () => {
+  deferTabContentRender()
+}, { immediate: true })
 
 // ========================================
 // PERSONAL TAB STATE
@@ -866,30 +900,28 @@ function getRarityName(rarityIndex) {
   return getRarityNameUtil(t, rarityIndex)
 }
 
+function formatSelectionDisplay(selectedCount, totalCount) {
+  if (selectedCount === 0) return t('divers.level_ranges_none')
+  if (selectedCount === totalCount) return t('divers.all_selected_short')
+  return `${selectedCount}/${totalCount}`
+}
+
 function getRarityDisplayTextPersonal() {
-  if (filterRaritiesPersonal.value.length === 0) return t('divers.none_selected')
-  if (filterRaritiesPersonal.value.length === 8) return t('divers.all_selected')
-  return `${filterRaritiesPersonal.value.length} sélectionné(e)s`
+  return formatSelectionDisplay(filterRaritiesPersonal.value.length, 8)
 }
 
 function getRarityDisplayTextCollective() {
-  if (filterRaritiesCollective.value.length === 0) return t('divers.none_selected')
-  if (filterRaritiesCollective.value.length === 8) return t('divers.all_selected')
-  return `${filterRaritiesCollective.value.length} sélectionné(e)s`
+  return formatSelectionDisplay(filterRaritiesCollective.value.length, 8)
 }
 
 function getSourcesDisplayTextPersonal() {
   const fi = filterSourcesPersonal.value || []
-  if (fi.length === 0) return t('divers.none_selected')
-  if (fi.length === allSourcesList.value.flat.length) return t('divers.all_selected')
-  return `${fi.length} ${t('divers.selected_count')}`
+  return formatSelectionDisplay(fi.length, allSourcesList.value.flat.length)
 }
 
 function getSourcesDisplayTextCollective() {
   const fi = filterSourcesCollective.value || []
-  if (fi.length === 0) return t('divers.none_selected')
-  if (fi.length === allSourcesList.value.flat.length) return t('divers.all_selected')
-  return `${fi.length} ${t('divers.selected_count')}`
+  return formatSelectionDisplay(fi.length, allSourcesList.value.flat.length)
 }
 
 // Rarity toggle functions
