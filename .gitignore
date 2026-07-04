@@ -51,3 +51,7 @@ pnpm-debug.log*
 # By default, ignore all generated files
 /public/data/*.generated.*
 /public/names/*.generated.*
+
+# Donnees de prix locales (non versionnees)
+/public/data/prices.json
+/public/data/prices/

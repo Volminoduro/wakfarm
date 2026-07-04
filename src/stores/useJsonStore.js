@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 import { useAppStore } from './useAppStore'
-import { watch } from 'vue'
 import { usePersonalPricesStore } from './usePersonalPricesStore'
 import { useCollectivePricesStore } from './useCollectivePricesStore'
 import { isPriceWithinAgeLimit } from '@/utils/priceFilter'
@@ -20,7 +19,6 @@ export const useJsonStore = defineStore('data', {
     _bossMapping: {},
     rawHarvestResources: [],
     rawCrafts: [],
-    _hasConfigWatcher: false,
     instancesBase: []
   }),
   getters: {
@@ -136,7 +134,7 @@ export const useJsonStore = defineStore('data', {
           unifiedMap[itemId] = collectiveStore.prices[server][itemId].price
         }
       })
-      
+
       this._priceMapCache = { server: serverKey, version, maxAgeDays, map: unifiedMap }
       return unifiedMap
     },
@@ -153,62 +151,60 @@ export const useJsonStore = defineStore('data', {
         
         this.rawItems = itemRes.data
         this.rawInstances = instRes.data
-        
-        // Load remaining data in background (Phase 2)
+
+        // Mark as loaded after Phase 1 — views can render while Phase 2 loads in background
+        this.loaded = true
+
+        // Phase 2a : petits fichiers (rapides, débloquent les vues serveurs/instances)
         try {
-          const [mappingRes, lootRes, serversRes, bossMappingRes, harvestResourcesRes, craftsRes, planCraftMappingRes] = await Promise.all([
+          const [mappingRes, serversRes, bossMappingRes, planCraftMappingRes] = await Promise.all([
             axios.get(`${basePath}data/mapping.json`),
-            axios.get(`${basePath}data/loots.json`),
             axios.get(`${basePath}data/servers.json`),
             axios.get(`${basePath}data/boss-mapping.json`),
-            axios.get(`${basePath}data/harvest.json`)
-              .catch(() => axios.get(`${basePath}data/harvest-resources.json`))
-              .catch(() => ({ data: { resources: [] } })),
-            axios.get(`${basePath}data/crafts.json`)
-              .catch(() => ({ data: { crafts: [] } })),
             axios.get(`${basePath}data/plan-craft-mapping.json`)
               .catch(() => ({ data: {} }))
           ])
           this.servers = serversRes.data || []
           this._rawMapping = mappingRes.data
-          this._rawLoots = lootRes.data
           this._bossMapping = bossMappingRes.data
-          this.rawHarvestResources = Array.isArray(harvestResourcesRes.data?.resources)
-            ? harvestResourcesRes.data.resources
-            : []
-          this.rawCrafts = Array.isArray(craftsRes.data?.crafts)
-            ? craftsRes.data.crafts
-            : []
           this.planCraftMap = planCraftMappingRes.data && typeof planCraftMappingRes.data === 'object'
             ? planCraftMappingRes.data
             : {}
-          
           this.rawInstances = this.rawInstances.map(inst => ({
             ...inst,
             bossId: this._bossMapping[inst.id] || null
           }))
-          
-          this._initiateInstancesBase()
         } catch (e) {
-          console.error('⚠️ Error loading Phase 2 data:', e)
+          console.error('⚠️ Error loading Phase 2a data:', e)
         }
-        
-        // **Setup watcher for server changes**
-        const appStore = useAppStore()
-        if (!this._hasConfigWatcher) {
-          this._hasConfigWatcher = true
-          watch(
-            () => appStore.config.server,
-            async (newServer, oldServer) => {
-              // Server changed - reactive computed will update
-            }
-          )
-        }
-        
-        // Mark as loaded after Phase 1
-        this.loaded = true
+
+        // Phase 2b : gros fichiers différés (loots 1.3 MB + crafts 1.8 MB)
+        // setTimeout(0) laisse le navigateur rendre l'UI de Phase 2a avant de parser ces fichiers
+        setTimeout(async () => {
+          try {
+            const [lootRes, harvestResourcesRes, craftsRes] = await Promise.all([
+              axios.get(`${basePath}data/loots.json`),
+              axios.get(`${basePath}data/harvest.json`)
+                .catch(() => axios.get(`${basePath}data/harvest-resources.json`))
+                .catch(() => ({ data: { resources: [] } })),
+              axios.get(`${basePath}data/crafts.json`)
+                .catch(() => ({ data: { crafts: [] } }))
+            ])
+            this._rawLoots = lootRes.data
+            this.rawHarvestResources = Array.isArray(harvestResourcesRes.data?.resources)
+              ? harvestResourcesRes.data.resources
+              : []
+            this.rawCrafts = Array.isArray(craftsRes.data?.crafts)
+              ? craftsRes.data.crafts
+              : []
+            this._initiateInstancesBase()
+          } catch (e) {
+            console.error('⚠️ Error loading Phase 2b data:', e)
+          }
+        }, 0)
       } catch (e) {
         console.error("❌ Error loading data:", e)
+        this.loaded = true // unblock the UI even if critical data failed
       }
     },
 

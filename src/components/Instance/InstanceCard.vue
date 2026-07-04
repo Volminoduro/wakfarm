@@ -10,16 +10,18 @@
     <transition name="expand">
       <div v-if="isExpanded && displayInstance?.items && displayInstance.items.length > 0" class="overflow-hidden" style="contain: layout style paint;">
         <ul class="divide-y divide-white/20 bg-secondary">
-          <li v-for="item in displayedItems" :key="item.itemId" class="px-5 py-2 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-              <div class="text-slate-200">
-                <span :class="['font-bold', getRarityClass(item.rarity)]">{{ $t("items." + item.itemId) }}</span>
-                <template v-if="detailedView">
-                  <span> x{{ formatQuantity(item.quantity) }} ({{ formatRate(item.rate) }}%{{ getSteleInfo(item) }})</span>
-                </template>
+          <li v-for="item in displayedItems" :key="item.itemId" class="px-5 py-2">
+            <div class="flex justify-between items-center">
+              <div class="flex items-center gap-3">
+                <div class="text-slate-200">
+                  <span :class="['font-bold', getRarityClass(item.rarity)]">{{ $t("items." + item.itemId) }}</span>
+                  <template v-if="detailedView">
+                    <span> x{{ formatQuantity(item.quantity) }} ({{ formatRate(item.rate) }}%{{ getSteleInfo(item) }})</span>
+                  </template>
+                </div>
               </div>
+              <div class="font-semibold text-kamas">{{ formatNumber(item.subtotal) }} ₭</div>
             </div>
-            <div class="font-semibold text-kamas">{{ formatNumber(item.subtotal) }} ₭</div>
           </li>
         </ul>
         <div v-if="hasMoreItems" class="px-5 py-3 text-center bg-secondary">

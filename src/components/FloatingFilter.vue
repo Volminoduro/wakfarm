@@ -58,7 +58,7 @@
               </td>
               <td class="text-center">
                 <div class="w-40 mx-auto">
-                  <select 
+                  <select
                     :value="store.config.maxPriceAgeDays === null ? 'unlimited' : store.config.maxPriceAgeDays"
                     @input="updateMaxPriceAgeDays"
                     class="cf-select"

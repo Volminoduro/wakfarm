@@ -90,9 +90,9 @@
           :instance="inst"
         />
       </div>
-      <!-- Loading indicator -->
-      <div v-if="hasMore && jsonStore.loaded" class="text-center py-4">
-        <span class="text-slate-400 text-sm">{{ $t('divers.loading') || 'Chargement...' }}</span>
+      <!-- Infinite scroll sentinel -->
+      <div v-if="hasMore && jsonStore.loaded" ref="infiniteScrollSentinel" class="text-center py-4">
+        <span class="text-slate-400 text-sm">↓ {{ $t('divers.scroll_for_more') || 'Défiler pour afficher la suite' }}</span>
       </div>
     </div>
   </div>
@@ -142,11 +142,11 @@ const { results: sortedInstances, rebuild: rebuildSortedInstancesChunked } = use
 const {
   visibleItems: visibleInstances,
   hasMore,
+  sentinel: infiniteScrollSentinel,
   reset: resetInfiniteScroll
 } = useInfiniteScroll({
   items: sortedInstances,
-  itemsPerPage: ITEMS_PER_PAGE,
-  threshold: 500
+  itemsPerPage: ITEMS_PER_PAGE
 })
 
 // Also reset when config changes (like server, modulated, etc.)

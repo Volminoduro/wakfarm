@@ -224,7 +224,7 @@ import InputUnitNumber from '@/components/InputUnitNumber.vue'
 import ToggleAllButton from '@/components/ToggleAllButton.vue'
 import FloatingFilter from '@/components/FloatingFilter.vue'
 import { calculateInstanceForRunWithPricesAndPassFilters, clearCalculatedInstanceCache, clearCalculatedInstanceWithPricesCache } from '@/utils/instanceProcessor'
-import { clampInteger, calculateResourceExpectedKamas, optimizeHarvestForTime } from '@/utils/harvestProfit'
+import { clampInteger, clampDecimal, calculateResourceExpectedKamas, optimizeHarvestForTime, getPrimaryLootStats } from '@/utils/harvestProfit'
 import { HARVEST_JOB_SKILL_IDS } from '@/utils/craftProfit'
 import { useI18n } from 'vue-i18n'
 
@@ -298,26 +298,6 @@ const ACTION_SECONDS_MAX = 999
 
 function isHarvestJob(skillId) {
   return HARVEST_JOB_SKILL_IDS.includes(Number(skillId))
-}
-
-function getPrimaryLootStats(resource) {
-  const primaryItemId = Number(resource?.primaryItemId)
-  const loots = Array.isArray(resource?.loots) ? resource.loots : []
-  const primaryLoots = loots.filter(loot => Number(loot.itemId) === primaryItemId)
-
-  const totalDropRate = primaryLoots.reduce(
-    (sum, loot) => sum + Math.max(0, Number(loot.dropRate) || 0),
-    0
-  )
-  const expectedQuantityPerAction = primaryLoots.reduce(
-    (sum, loot) => sum + (Math.max(0, Number(loot.dropRate) || 0) * Math.max(0, Number(loot.expectedQuantity) || 0)),
-    0
-  )
-
-  return {
-    dropRate: totalDropRate > 0 ? Math.min(1, totalDropRate) : 1,
-    expectedQuantityPerAction
-  }
 }
 
 function deduplicatePicksByItemId(picks) {
@@ -517,19 +497,6 @@ function validateHarvestActionSeconds(skillId, event) {
 
 function validateHarvestGlobalBonus(event) {
   updateHarvestGlobalField(harvestGlobalBonus, event, value => clampInteger(value, 0, 999, true))
-}
-
-function clampDecimal(value, min = ACTION_SECONDS_MIN, max = ACTION_SECONDS_MAX, allowNull = true) {
-  if (value === '' || value === null || typeof value === 'undefined') {
-    return allowNull ? null : min
-  }
-
-  const parsed = Number.parseFloat(String(value).replace(',', '.'))
-  if (Number.isNaN(parsed)) {
-    return allowNull ? null : min
-  }
-
-  return Math.min(max, Math.max(min, parsed))
 }
 
 const timePeriodMinutes = computed(() => {

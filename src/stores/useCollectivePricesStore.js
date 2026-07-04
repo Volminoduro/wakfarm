@@ -93,6 +93,7 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
     allowlistChecked: false,
     blacklistUnsubRead: null,
     blacklistUnsubWrite: null,
+    priceUnsubs: [],
     readPermissionDeniedShown: false
   }),
 
@@ -139,17 +140,12 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
         console.warn('⚠️ Could not set auth persistence:', err)
       }
 
-      // Try to restore existing authentication or create new one
       const authenticated = await this.authenticateWithMachineID()
-      
+
       if (authenticated) {
-        // Map Firebase UID to machine ID for rules lookups
         await this.ensureClientMapping()
-        // Auto-whitelist on first connection
         await this.ensureWhitelisted()
-        // Check blacklist status
         await this.checkBlacklistStatus()
-        // Subscribe to blacklist changes for real-time status
         this.subscribeBlacklistStatus()
         await this.loadPrices()
         this.isInitialized = true
@@ -358,26 +354,29 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
     subscribeToAllPrices() {
       if (!db) return
 
-      // Check if user is blacklisted for reading
       if (this.isBlacklisted && this.blacklistType === 'read') {
         console.warn('⚠️ Real-time read blocked: user is read-blacklisted')
         return
       }
-      
+
+      // Cancel existing price subscriptions before re-subscribing
+      this.priceUnsubs.forEach(unsub => { try { unsub() } catch { /* ignore */ } })
+      this.priceUnsubs = []
+
       const servers = getServerList()
       servers.forEach(server => {
         try {
           const collectionName = `collective_prices_${server.toLowerCase()}`
           const pricesCollectionRef = collection(db, collectionName)
-          
-          onSnapshot(pricesCollectionRef, (snapshot) => {
+
+          const unsub = onSnapshot(pricesCollectionRef, (snapshot) => {
             if (!this.prices[server]) {
               this.prices[server] = {}
             }
-            
+
             snapshot.forEach(doc => {
               const data = doc.data()
-              
+
               if (this.isLocalUpdate) {
                 return
               }
@@ -399,6 +398,8 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
             }
             console.error(`❌ Firebase listener error for ${server}:`, err)
           })
+
+          this.priceUnsubs.push(unsub)
         } catch (err) {
           // Collection might not exist
         }

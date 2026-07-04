@@ -150,7 +150,7 @@ function goCraftPrimary() {
 }
 
 function goPricesPrimary() {
-  selectPrices('collective')
+  selectPrices('personal')
 }
 
 function selectDungeons(tab) {

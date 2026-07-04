@@ -45,6 +45,7 @@ import { useLocalStorage } from '@/composables/useLocalStorage'
 import { useUpdateChecker } from '@/composables/useUpdateChecker'
 import { isTauriAvailable } from '@/utils/tauriHelper'
 import { LS_KEYS } from '@/constants/localStorageKeys'
+import { UPDATE_REPO } from '@/constants'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppFooter from '@/components/layout/AppFooter.vue'
 import RentabilityRunView from '@/views/RentabilityRunView.vue'
@@ -63,8 +64,6 @@ const devToolsStore = useDevToolsStore()
 // Tab state with localStorage persistence (shared ref)
 const mainTab = useLocalStorage(LS_KEYS.MAIN_TAB, 'rentability')
 const minimizeToTray = useLocalStorage(LS_KEYS.SETTINGS_MINIMIZE_TO_TRAY, false)
-
-const UPDATE_REPO = 'Volminoduro/wakfarm'
 
 const { checkForUpdates } = useUpdateChecker({ repo: UPDATE_REPO })
 

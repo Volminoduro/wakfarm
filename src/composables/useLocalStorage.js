@@ -1,22 +1,30 @@
 import { ref, watch } from 'vue'
 
-// Cache pour retourner la même référence pour une clé donnée
+// Cache par clé : { ref, defaultValue }
 const storageCache = new Map()
 
-/**
- * Composable pour gérer la persistance localStorage avec watch automatique
- * Retourne une référence partagée par clé pour que plusieurs appels restent synchronisés
- * @param {string} key - Clé localStorage
- * @param {*} defaultValue - Valeur par défaut
- * @param {Object} options - Options { deep: boolean }
- * @returns {Ref} - Référence réactive synchronisée avec localStorage
- */
+// Single shared storage event listener dispatching to all registered keys
+let storageListenerActive = false
+function ensureStorageListener() {
+  if (storageListenerActive || typeof window === 'undefined') return
+  storageListenerActive = true
+  window.addEventListener('storage', (e) => {
+    if (!e || e.key === null) return
+    const entry = storageCache.get(e.key)
+    if (!entry) return
+    try {
+      entry.ref.value = e.newValue !== null ? JSON.parse(e.newValue) : entry.defaultValue
+    } catch {
+      // ignore parse errors
+    }
+  })
+}
+
 export function useLocalStorage(key, defaultValue, options = {}) {
   const { deep = false } = options
 
-  if (storageCache.has(key)) return storageCache.get(key)
+  if (storageCache.has(key)) return storageCache.get(key).ref
 
-  // Charger la valeur depuis localStorage
   const loadValue = () => {
     try {
       const saved = localStorage.getItem(key)
@@ -28,7 +36,6 @@ export function useLocalStorage(key, defaultValue, options = {}) {
 
   const value = ref(loadValue())
 
-  // Sauvegarder automatiquement lors des changements
   watch(
     value,
     (newVal) => {
@@ -41,22 +48,7 @@ export function useLocalStorage(key, defaultValue, options = {}) {
     { deep, immediate: false }
   )
 
-  // Écoute les changements provenant d'autres onglets/fenêtres
-  const onStorage = (e) => {
-    if (!e) return
-    try {
-      if (e.key === key) {
-        value.value = e.newValue !== null ? JSON.parse(e.newValue) : defaultValue
-      }
-    } catch {
-      // ignore parse errors
-    }
-  }
-
-  if (typeof window !== 'undefined' && window.addEventListener) {
-    window.addEventListener('storage', onStorage)
-  }
-
-  storageCache.set(key, value)
+  storageCache.set(key, { ref: value, defaultValue })
+  ensureStorageListener()
   return value
 }

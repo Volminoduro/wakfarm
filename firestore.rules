@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Each user can only read/write their own UID → machineId mapping
+    match /client_ids/{userId} {
+      allow read, write: if isAuth() && request.auth.uid == userId;
+    }
+
+    // Auto-registration on first connect: any authenticated user can register their machineId
+    match /allowlist/{machineId} {
+      allow read, write: if isAuth();
+    }
+
+    // Blacklists: readable by all authenticated users to check their own status
+    // Writable by admin only (Firebase console)
+    match /blacklist_read/{machineId} {
+      allow read: if isAuth();
+      allow write: if false;
+    }
+    match /blacklist_write/{machineId} {
+      allow read: if isAuth();
+      allow write: if false;
+    }
+
+    // Collective prices: any authenticated user can read/write
+    // Blacklist enforcement is handled in application code (avoids cross-document rule evaluation issues)
+    match /collective_prices_pandora/{itemId}     { allow read, write: if isAuth(); }
+    match /collective_prices_rubilax/{itemId}     { allow read, write: if isAuth(); }
+    match /collective_prices_ogrest/{itemId}      { allow read, write: if isAuth(); }
+    match /collective_prices_neo-pandora/{itemId} { allow read, write: if isAuth(); }
+    match /collective_prices_neo-rubilax/{itemId} { allow read, write: if isAuth(); }
+    match /collective_prices_neo-ogrest/{itemId}  { allow read, write: if isAuth(); }
+
+    // Price history: write only, no read (audit trail)
+    match /price_history_pandora/{entryId}     { allow write: if isAuth(); }
+    match /price_history_rubilax/{entryId}     { allow write: if isAuth(); }
+    match /price_history_ogrest/{entryId}      { allow write: if isAuth(); }
+    match /price_history_neo-pandora/{entryId} { allow write: if isAuth(); }
+    match /price_history_neo-rubilax/{entryId} { allow write: if isAuth(); }
+    match /price_history_neo-ogrest/{entryId}  { allow write: if isAuth(); }
+  }
+}

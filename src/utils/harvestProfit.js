@@ -1,3 +1,16 @@
+export function clampDecimal(value, min = 0.1, max = 999, allowNull = true) {
+  if (value === '' || value === null || typeof value === 'undefined') {
+    return allowNull ? null : min
+  }
+
+  const parsed = Number.parseFloat(String(value).replace(',', '.'))
+  if (Number.isNaN(parsed)) {
+    return allowNull ? null : min
+  }
+
+  return Math.min(max, Math.max(min, parsed))
+}
+
 export function clampInteger(value, min = 0, max = 999, allowNull = true) {
   if (value === '' || value === null || typeof value === 'undefined') {
     return allowNull ? null : min
@@ -151,7 +164,7 @@ function countDecimals(value) {
   return stringValue.split('.')[1].length
 }
 
-function getPrimaryLootStats(resource) {
+export function getPrimaryLootStats(resource) {
   const primaryItemId = Number(resource?.primaryItemId)
   const loots = Array.isArray(resource?.loots) ? resource.loots : []
   const primaryLoots = loots.filter(loot => Number(loot.itemId) === primaryItemId)

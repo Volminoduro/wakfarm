@@ -1,32 +1,46 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
-export function useInfiniteScroll({ items, itemsPerPage = 20, threshold = 500 }) {
+export function useInfiniteScroll({ items, itemsPerPage = 20 }) {
   const visibleCount = ref(itemsPerPage)
+  const sentinel = ref(null)
 
   const visibleItems = computed(() => items.value.slice(0, visibleCount.value))
   const hasMore = computed(() => visibleCount.value < items.value.length)
+
+  function loadMore() {
+    if (!hasMore.value) return
+    visibleCount.value = Math.min(visibleCount.value + itemsPerPage, items.value.length)
+  }
 
   function reset() {
     visibleCount.value = itemsPerPage
   }
 
-  function handleScroll() {
-    if (!hasMore.value) return
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-    const windowHeight = window.innerHeight
-    const documentHeight = document.documentElement.scrollHeight
+  let observer = null
 
-    if (scrollTop + windowHeight >= documentHeight - threshold) {
-      visibleCount.value = Math.min(visibleCount.value + itemsPerPage, items.value.length)
-    }
+  function setupObserver() {
+    if (observer) observer.disconnect()
+    if (!sentinel.value) return
+
+    observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMore()
+      },
+      { rootMargin: '200px' }
+    )
+    observer.observe(sentinel.value)
   }
 
   onMounted(() => {
-    window.addEventListener('scroll', handleScroll)
+    setupObserver()
   })
 
   onUnmounted(() => {
-    window.removeEventListener('scroll', handleScroll)
+    if (observer) observer.disconnect()
+  })
+
+  watch(sentinel, () => {
+    setupObserver()
   })
 
   watch(() => items.value.length, () => {
@@ -37,6 +51,7 @@ export function useInfiniteScroll({ items, itemsPerPage = 20, threshold = 500 })
     visibleItems,
     hasMore,
     visibleCount,
+    sentinel,
     reset
   }
 }

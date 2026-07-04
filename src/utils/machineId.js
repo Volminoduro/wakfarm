@@ -1,20 +1,7 @@
-/**
- * Machine ID generation for both Tauri (desktop) and Web environments
- * 
- * - Tauri: Uses hardware-based machine ID from Rust backend
- * - Web: Uses IP address + browser fingerprint hashed for consistency
- */
-
 import { invoke } from '@tauri-apps/api/core'
+import { isTauriAvailable } from '@/utils/tauriHelper'
 
 let lastMachineIdSource = 'unknown'
-
-/**
- * Detects if the app is running in Tauri environment
- */
-function isTauri() {
-  return '__TAURI__' in window
-}
 
 /**
  * Hash a string using SHA-256 (Web Crypto API)
@@ -171,7 +158,7 @@ async function getTauriMachineId() {
  * @returns {Promise<string|null>} - Machine ID or null if failed
  */
 export async function getMachineId() {
-  if (isTauri()) {
+  if (isTauriAvailable()) {
     return await getTauriMachineId()
   } else {
     return await getWebMachineId()
@@ -183,10 +170,10 @@ export async function getMachineId() {
  * @returns {boolean}
  */
 export function isRunningInTauri() {
-  return isTauri()
+  return isTauriAvailable()
 }
 
 export function getMachineIdSource() {
-  if (isTauri()) return 'desktop_hardware'
+  if (isTauriAvailable()) return 'desktop_hardware'
   return lastMachineIdSource || 'web_cached_unknown'
 }

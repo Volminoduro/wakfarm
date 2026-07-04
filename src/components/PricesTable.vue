@@ -1,14 +1,15 @@
 <template>
   <div>
     <!-- Table -->
-    <div class="cf-card">
+    <div class="cf-card" @wheel.prevent="onTableWheel">
       <div class="overflow-x-auto">
         <table class="w-full table-fixed">
           <colgroup>
-            <col style="width:35%" />
+            <col style="width:32%" />
             <col style="width:5%" />
-            <col style="width:35%" />
-            <col style="width:25%" />
+            <col style="width:28%" />
+            <col style="width:22%" />
+            <col style="width:13%" />
           </colgroup>
           <thead class="font-bold truncate text-slate-100">
             <tr>
@@ -36,6 +37,12 @@
                   <span class="inline-block w-3 text-center">{{ sortColumn === 'price' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
                 </div>
               </th>
+              <th @click="sortBy('lastUpdated')" :class="['cf-table-header','cf-table-header--hover','text-right']">
+                <div class="flex items-center justify-end gap-2">
+                  {{ $t('divers.prices_col_updated') }}
+                  <span class="inline-block w-3 text-center">{{ sortColumn === 'lastUpdated' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span>
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -50,7 +57,11 @@
               </td>
               <td class="px-4 py-3 text-slate-200">{{ item.level }}</td>
               <td class="px-4 py-3 cf-text-secondary">
-                <span v-if="item.sources && item.sources.length > 0" class="text-sm">
+                <span
+                  v-if="item.sources && item.sources.length > 0"
+                  class="text-sm block truncate cursor-default"
+                  :title="item.sources.join(', ')"
+                >
                   {{ item.sources.join(', ') }}
                 </span>
                 <span v-else class="text-slate-400">—</span>
@@ -71,6 +82,9 @@
                   />
                   <span class="kamas-icon">₭</span>
                 </div>
+              </td>
+              <td class="px-4 py-3 text-right text-sm cf-text-secondary whitespace-nowrap">
+                {{ getPriceLastUpdated(appStore.config.server, item.id) ? formatTimestamp(getPriceLastUpdated(appStore.config.server, item.id)) : '—' }}
               </td>
             </tr>
           </tbody>
@@ -247,16 +261,24 @@ const filteredAndSortedItems = computed(() => {
   }
   
   // Sort
+  // Timestamps precalcules : un lookup store par item, pas un par COMPARAISON du tri
+  const tsById = props.sortColumn === 'lastUpdated'
+    ? new Map(result.map(item => [item.id, getPriceLastUpdated(appStore.config.server, item.id) || 0]))
+    : null
   result.sort((a, b) => {
     let aVal = a[props.sortColumn]
     let bVal = b[props.sortColumn]
-    
+
     if (props.sortColumn === 'sources') {
       aVal = a.sourceIds?.length || 0
       bVal = b.sourceIds?.length || 0
     } else if (props.sortColumn === 'price') {
       aVal = aVal ?? -1
       bVal = bVal ?? -1
+    } else if (props.sortColumn === 'lastUpdated') {
+      // tri par date de derniere mise a jour du prix
+      aVal = tsById.get(a.id)
+      bVal = tsById.get(b.id)
     } else if (typeof aVal === 'string') {
       aVal = aVal.toLowerCase()
       bVal = bVal.toLowerCase()
@@ -340,5 +362,14 @@ function goToNextPage() {
 
 function goToLastPage() {
   setPage(totalPages.value)
+}
+
+let _wheelTimer = null
+function onTableWheel(e) {
+  if (Math.abs(e.deltaY) < 10) return  // ignore trackpad micro-mouvements
+  if (_wheelTimer) return               // debounce : 1 changement de page par geste
+  _wheelTimer = setTimeout(() => { _wheelTimer = null }, 300)
+  if (e.deltaY > 0) goToNextPage()
+  else goToPreviousPage()
 }
 </script>

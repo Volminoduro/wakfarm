@@ -112,25 +112,24 @@ export function _processLoots(loots, config, itemRarityMap = {}, nbPlayers = 1, 
 
     const itemRarity = itemRarityMap[loot.itemId] || 0
 
-    let adjustedRate = _computeAdjustedRate(loot.rate || 0, config)
-    loot.rate = Math.min(adjustedRate * (1 + bonusPPMultiplier), 1.0)
-
-    loot.quantity = _calculateHopedQuantity(loot, itemRarity, nbPlayers, nbCycles)
+    const adjustedRate = _computeAdjustedRate(loot.rate || 0, config)
+    const rate = Math.min(adjustedRate * (1 + bonusPPMultiplier), 1.0)
+    const quantity = _calculateHopedQuantity({ ...loot, rate }, itemRarity, nbPlayers, nbCycles)
 
     if (!perItem.has(itemId)) {
       perItem.set(itemId, {
         itemId,
-        rate: loot.rate,
+        rate,
         price: loot.price || 0,
-        quantity: loot.quantity,
+        quantity,
         stele: loot.stele || 0,
         steleIntervention: loot.steleIntervention || 0,
         rarity: itemRarity || 0
       })
     } else {
       const item = perItem.get(itemId)
-      item.rate = Math.min(item.rate + loot.rate, 1.0)
-      item.quantity += loot.quantity
+      item.rate = Math.min(item.rate + rate, 1.0)
+      item.quantity += quantity
     }
 
   })
@@ -141,7 +140,6 @@ export function _processLoots(loots, config, itemRarityMap = {}, nbPlayers = 1, 
 export function _calculateInstanceForRun(instanceId, runConfig) {
   const key = _makeCalculatedInstanceCacheKey(instanceId, runConfig)
   if (calculatedInstanceCache.has(key)) {
-    console.info('[cache-hit] calculatedInstanceCache', key)
     return calculatedInstanceCache.get(key)
   }
 
@@ -194,7 +192,6 @@ export function calculateInstanceForRunWithPricesAndPassFilters(instanceId, runC
   let result = null
 
   if (calculatedInstanceWithPriceCache.has(key)) {
-    console.info('[cache-hit] calculatedInstanceWithPriceCache', key)
     result = calculatedInstanceWithPriceCache.get(key)
   } else {
     const itemsWithPrices = (calculatedInstance.items || []).map(it => {
