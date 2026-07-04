@@ -11187,15 +11187,7 @@
     "harvest_job_skill_81": "Marceneiro",
     "harvest_job_skill_83": "Mestre de armas",
     "settings": {
-      "launchOnStartup": "Iniciar o aplicativo na inicialização do Windows",
-      "minimizeToTray": "Ao fechar (X), minimizar para a bandeja do sistema (ícones ocultos)",
       "shareFiltersBetweenMenus": "Compartilhar os valores dos filtros entre todos os menus"
-    },
-    "update": {
-      "title": "Atualizar",
-      "message": "Nova versão {version} disponível. Deseja atualizar agora?",
-      "manualDownload": "Baixe a atualização de:\n{url}",
-      "failed": "Falha na atualização: {error}"
     }
   }
 }

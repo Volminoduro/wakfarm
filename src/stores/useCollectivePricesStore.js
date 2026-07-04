@@ -16,10 +16,9 @@ import {
   setPersistence,
   browserLocalPersistence
 } from 'firebase/auth'
-import { getVersion } from '@tauri-apps/api/app'
 import { useAlertsStore } from '@/stores/useAlertsStore'
 import { useJsonStore } from '@/stores/useJsonStore'
-import { getMachineId, getMachineIdSource, isRunningInTauri } from '@/utils/machineId'
+import { getMachineId, getMachineIdSource } from '@/utils/machineId'
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
@@ -70,7 +69,7 @@ function bumpPricesVersion() {
 }
 
 function getClientPlatform() {
-  return isRunningInTauri() ? 'desktop' : 'web'
+  return 'web'
 }
 
 export const useCollectivePricesStore = defineStore('collectivePrices', {
@@ -105,33 +104,22 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
       }
 
       try {
-        // Get machine ID to ensure consistent auth across builds
-        // Works in both Tauri (hardware-based) and Web (IP-based)
+        // Get machine ID to ensure consistent auth across builds (IP + fingerprint)
         this.machineID = await getMachineId()
         this.machineIdSource = getMachineIdSource()
         if (!this.machineID) {
           console.warn('⚠️ No machine ID available, using fallback')
         } else {
-          console.info(`✓ Machine ID obtained (${isRunningInTauri() ? 'Tauri' : 'Web'} mode, source: ${this.machineIdSource})`)
+          console.info(`✓ Machine ID obtained (source: ${this.machineIdSource})`)
         }
       } catch (err) {
         console.warn('⚠️ Could not get machine ID:', err)
         this.machineID = null
-        this.machineIdSource = isRunningInTauri() ? 'desktop_hardware' : 'web_unknown'
+        this.machineIdSource = 'web_unknown'
       }
 
-      // Get app version
-      try {
-        if (isRunningInTauri()) {
-          this.appVersion = await getVersion()
-        } else {
-          // For web version, use package.json version or a default
-          this.appVersion = import.meta.env.VITE_APP_VERSION || 'web'
-        }
-      } catch (err) {
-        console.warn('⚠️ Could not get app version:', err)
-        this.appVersion = isRunningInTauri() ? null : 'web'
-      }
+      // App version (injectee au build depuis package.json)
+      this.appVersion = import.meta.env.VITE_APP_VERSION || 'web'
 
       // Configure Firebase Auth persistence
       try {
@@ -180,7 +168,7 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
 
       try {
         const clientPlatform = getClientPlatform()
-        const machineIdSource = this.machineIdSource || (isRunningInTauri() ? 'desktop_hardware' : 'web_unknown')
+        const machineIdSource = this.machineIdSource || 'web_unknown'
         await setDoc(
           doc(db, 'client_ids', this.userID),
           {
@@ -202,7 +190,7 @@ export const useCollectivePricesStore = defineStore('collectivePrices', {
 
       try {
         const clientPlatform = getClientPlatform()
-        const machineIdSource = this.machineIdSource || (isRunningInTauri() ? 'desktop_hardware' : 'web_unknown')
+        const machineIdSource = this.machineIdSource || 'web_unknown'
         // Use machine ID for whitelist/blacklist to ensure consistency
         const snap = await getDoc(doc(db, 'allowlist', this.machineID))
         this.isAllowlisted = snap.exists()

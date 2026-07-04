@@ -11205,15 +11205,7 @@
     "harvest_job_skill_81": "Ébéniste",
     "harvest_job_skill_83": "Maître d'Armes",
     "settings": {
-      "launchOnStartup": "Lancer l'application au démarrage de Windows",
-      "minimizeToTray": "Lors de la fermeture (croix), réduire dans la zone de notification (icônes cachées)",
       "shareFiltersBetweenMenus": "Mutualiser les valeurs des filtres entre tous les menus"
-    },
-    "update": {
-      "title": "Mise à jour",
-      "message": "Nouvelle version {version} disponible. Mettre à jour maintenant ?",
-      "manualDownload": "Téléchargez la mise à jour depuis :\n{url}",
-      "failed": "La mise à jour a échoué : {error}"
     }
   }
 }

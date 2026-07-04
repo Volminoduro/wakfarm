@@ -69,4 +69,3 @@ export const BOOSTER_BONUS = {
   'neo-pandora': 1.25
 }
 
-export const UPDATE_REPO = 'Volminoduro/wakfarm'

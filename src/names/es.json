@@ -11187,15 +11187,7 @@
     "harvest_job_skill_81": "Ebanista",
     "harvest_job_skill_83": "Maestro de armas",
     "settings": {
-      "launchOnStartup": "Iniciar la aplicación al arrancar Windows",
-      "minimizeToTray": "Al cerrar (X), minimizar a la bandeja del sistema (iconos ocultos)",
       "shareFiltersBetweenMenus": "Compartir los valores de filtros entre todos los menús"
-    },
-    "update": {
-      "title": "Actualización",
-      "message": "Nueva versión {version} disponible. ¿Actualizar ahora?",
-      "manualDownload": "Descargue la actualización desde:\n{url}",
-      "failed": "La actualización falló: {error}"
     }
   }
 }

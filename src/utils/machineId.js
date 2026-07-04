@@ -1,6 +1,3 @@
-import { invoke } from '@tauri-apps/api/core'
-import { isTauriAvailable } from '@/utils/tauriHelper'
-
 let lastMachineIdSource = 'unknown'
 
 /**
@@ -138,42 +135,13 @@ async function getWebMachineId() {
 }
 
 /**
- * Get machine ID for Tauri environment (hardware-based)
- * @returns {Promise<string|null>} - Machine ID or null if failed
- */
-async function getTauriMachineId() {
-  try {
-    const machineId = await invoke('get_machine_id')
-    lastMachineIdSource = 'desktop_hardware'
-    console.info('Got machine ID from Tauri backend')
-    return machineId
-  } catch (error) {
-    console.error('Error getting Tauri machine ID:', error)
-    return null
-  }
-}
-
-/**
- * Get machine ID (works in both Tauri and Web environments)
+ * Get machine ID (IP + browser fingerprint)
  * @returns {Promise<string|null>} - Machine ID or null if failed
  */
 export async function getMachineId() {
-  if (isTauriAvailable()) {
-    return await getTauriMachineId()
-  } else {
-    return await getWebMachineId()
-  }
-}
-
-/**
- * Check if running in Tauri environment
- * @returns {boolean}
- */
-export function isRunningInTauri() {
-  return isTauriAvailable()
+  return await getWebMachineId()
 }
 
 export function getMachineIdSource() {
-  if (isTauriAvailable()) return 'desktop_hardware'
   return lastMachineIdSource || 'web_cached_unknown'
 }

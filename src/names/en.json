@@ -11187,15 +11187,7 @@
     "harvest_job_skill_81": "Handyman",
     "harvest_job_skill_83": "Weapons Master",
     "settings": {
-      "launchOnStartup": "Launch the application at Windows startup",
-      "minimizeToTray": "On close (X), minimize to system tray (hidden icons)",
       "shareFiltersBetweenMenus": "Share filter values across all menus"
-    },
-    "update": {
-      "title": "Update",
-      "message": "New version {version} available. Update now?",
-      "manualDownload": "Download the update from:\n{url}",
-      "failed": "Update failed: {error}"
     }
   }
 }

@@ -13,31 +13,6 @@
       </div>
     </div>
 
-    <div class="cf-panel" v-if="isTauriAvailable()">
-      <div class="flex items-center gap-2 mb-4">
-        <input
-          id="launchOnStartup"
-          type="checkbox"
-          :checked="isAutostartEnabled"
-          @change="toggleAutostart"
-          :disabled="autostartLoading"
-        />
-        <label for="launchOnStartup" class="cf-text-normal">
-          {{ $t('divers.settings.launchOnStartup') }}
-        </label>
-      </div>
-      <div class="flex items-center gap-2">
-        <input
-          id="minimizeToTray"
-          type="checkbox"
-          v-model="minimizeToTray"
-        />
-        <label for="minimizeToTray" class="cf-text-normal">
-          {{ $t('divers.settings.minimizeToTray') }}
-        </label>
-      </div>
-    </div>
-
     <!-- Development Tools Section -->
     <div class="cf-panel mt-8 border border-slate-700">
       <h3 class="text-sm font-bold text-slate-300 mb-4 uppercase">Dev Tools</h3>
@@ -61,25 +36,9 @@
 </template>
 
 <script setup>
-import { useLocalStorage } from '@/composables/useLocalStorage'
-import { useAutostart } from '@/composables/useAutostart'
-import { useMinimizeToTray } from '@/composables/useMinimizeToTray'
 import { useDevToolsStore } from '@/stores/useDevToolsStore'
 import { useAppStore } from '@/stores/useAppStore'
-import { isTauriAvailable } from '@/utils/tauriHelper'
-import { LS_KEYS } from '@/constants/localStorageKeys'
-import { watch, onMounted } from 'vue'
 
 const appStore = useAppStore()
-const minimizeToTray = useLocalStorage(LS_KEYS.SETTINGS_MINIMIZE_TO_TRAY, false)
-const { isAutostartEnabled, isLoading: autostartLoading, toggleAutostart } = useAutostart()
-const { setupCloseToTray } = useMinimizeToTray()
 const devToolsStore = useDevToolsStore()
-
-// Setup close to tray when setting changes
-onMounted(() => {
-  watch(minimizeToTray, (enabled) => {
-    setupCloseToTray(enabled)
-  }, { immediate: true })
-})
 </script>
